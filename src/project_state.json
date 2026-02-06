@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 43,
-  "summary": "VAANI: voice-first creator/listener platform MVP focused on a clean Motoko backend foundation (profiles, auth via caller Principal, admin roles) plus an admin-first audio metadata submission/approval workflow (metadata only; no audio files). Root UI is being reset/simplified back to the stable v1–v8 behavior: remove SafeRoot/AppShell and all root-level hydration/guard/loader/timeout logic; root must synchronously render Creator Zone as the default UI on first paint. Current critical blank-screen cause has been identified as a Router context crash: Header renders before the Router provider but uses router hooks, causing React to crash before mount; fix requires moving Header inside the Router tree with no other behavior changes. Admin/Studio behavior (including /studio guard and Principal ID display rules) must be implemented only in child components and must not affect root rendering. Recording, playback, subscriptions/payments, and creator earnings remain explicitly deferred.",
+  "projectStateVersion": 47,
+  "summary": "VAANI: Version 21 remains the stable baseline with strict constraints (do not modify root, RouterProvider, Header, routing structure, auth guards, or compiled files). Two scoped UX fixes are required: (1) after logout, clear session and soft-redirect via navigate('/', { replace: true }) to prevent occasional blank screen; (2) on successful login, redirect only in the login success handler—admins navigate('/studio', { replace: true }), non-admins perform no navigation (remain on /). Creator Zone route is '/' and /creator-zone must not be introduced or used.",
   "architectural_notes": [
     "Implement as a mobile-first web app backend; defer recording, subscription billing/checkout sync, and earnings features for now.",
     "Admin-first moderation workflow: creator submissions enter a pending queue; only admin-approved metadata is visible via public read APIs; no audio file storage/processing in this phase.",
@@ -339,6 +339,70 @@
         "REQ-54"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-create-a-new-child-level-authentication-layer-implemented-as-a-separate-react-authcontext-that-provides-1-isauthenticated-state-2-login-and-logout-actions-3-a-background-post-render-session-sync-that-reads-internet-identity-state-without-blocking-or-hiding-the-ui-and-4-an-autologoutreason-e-g-idle-when-a-logout-is-triggered-automatically",
+      "title": "Create a new child-level authentication layer implemented as a separate React AuthContext that provides: (1) `isAuthenticated` state, (2) `login()` and `logout()` actions, (3) a background (post-render) session sync that reads Internet Identity state without blocking or hiding the UI, and (4) an `autoLogoutReason` (e.g., 'idle') when a logout is triggered automatically.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-idle-based-auto-logout-inside-the-new-authcontext-after-a-successful-login-i-e-authenticated-state-becomes-true-start-a-5-minute-idle-timer-that-resets-on-user-activity-at-minimum-mousemove-keydown-click-pointerdown-scroll-touchstart-if-idle-for-5-minutes-clear-the-session-auth-state-and-trigger-a-soft-redirect-to-creator-zone-without-blocking-ui",
+      "title": "Implement idle-based auto-logout inside the new AuthContext: after a successful login (i.e., authenticated state becomes true), start a 5-minute idle timer that resets on user activity (at minimum: mousemove, keydown, click/pointerdown, scroll, touchstart). If idle for 5 minutes, clear the session/auth state and trigger a soft redirect to Creator Zone (`/`) without blocking UI.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-login-logout-ui-controls-to-the-creator-zone-home-route-as-a-child-level-enhancement-creator-zone-must-always-render-and-the-auth-controls-must-not-introduce-conditional-early-returns-null-returns-or-ui-blocking-login-should-invoke-the-authcontext-login-action-logout-should-invoke-the-authcontext-logout-action",
+      "title": "Add Login/Logout UI controls to the Creator Zone (home route) as a child-level enhancement: Creator Zone must always render, and the auth controls must not introduce conditional early-returns, null returns, or UI blocking. Login should invoke the AuthContext `login()` action; Logout should invoke the AuthContext `logout()` action.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-manual-logout-and-auto-logout-ensure-the-following-are-always-performed-without-blocking-ui-clear-authentication-session-state-clear-any-identity-scoped-cached-data-that-could-leak-authenticated-state-into-the-logged-out-view-and-softly-redirect-to-creator-zone-using-useeffect-never-during-render",
+      "title": "On manual logout and auto-logout, ensure the following are always performed without blocking UI: clear authentication/session state, clear any identity-scoped cached data that could leak authenticated state into the logged-out view, and softly redirect to Creator Zone (`/`) using `useEffect` (never during render).",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-show-a-non-blocking-user-visible-notice-on-the-creator-zone-after-an-auto-logout-due-to-idleness-english-text-the-notice-must-not-be-a-full-screen-blocker-and-must-not-hide-creator-zone-content",
+      "title": "Show a non-blocking, user-visible notice on the Creator Zone after an auto-logout due to idleness (English text). The notice must not be a full-screen blocker and must not hide Creator Zone content.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-authcontext-logout-redirect-behavior-so-that-after-any-logout-manual-logout-or-idle-auto-logout-the-app-clears-session-state-and-then-performs-a-soft-redirect-to-the-creator-zone-root-route-using-navigate-replace-true-route-must-be-and-creator-zone-must-not-be-used",
+      "title": "Update the AuthContext logout redirect behavior so that after any logout (manual logout or idle auto-logout) the app clears session state and then performs a soft redirect to the Creator Zone root route using `navigate('/', { replace: true })` (route must be `/`, and `/creator-zone` must not be used).",
+      "reqIds": [
+        "REQ-61"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-role-based-post-login-navigation-strictly-in-the-login-success-path-after-a-successful-internet-identity-login-initiated-by-the-app-s-login-action-if-the-authenticated-user-is-confirmed-admin-perform-navigate-studio-replace-true-if-the-user-is-non-admin-perform-no-navigation-remain-on-the-current-page-which-is",
+      "title": "Implement role-based post-login navigation strictly in the login success path: after a successful Internet Identity login initiated by the app’s Login action, if the authenticated user is confirmed admin, perform `navigate('/studio', { replace: true })`; if the user is non-admin, perform no navigation (remain on the current page, which is `/`).",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-keep-routing-and-existing-guards-unchanged-while-applying-these-ux-fixes-do-not-introduce-any-new-routes-do-not-change-the-routing-structure-and-do-not-modify-root-layout-header-router-setup-studio-guards-or-any-compiled-built-bundle-files-as-part-of-this-change",
+      "title": "Keep routing and existing guards unchanged while applying these UX fixes: do not introduce any new routes, do not change the routing structure, and do not modify root layout, Header, router setup, Studio guards, or any compiled/built bundle files as part of this change.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -562,6 +626,24 @@
       "reqIds": [
         "REQ-55"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Add child-level Login/Logout via separate AuthContext with background session check (post-render) while Creator Zone always renders; no root/router/header changes; redirects only in useEffect",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Add idle-based auto-logout (5 minutes) after login: activity listeners + timer; on idle clear session/auth state and softly redirect to Creator Zone without blocking UI or returning null",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Scoped UX fix: prevent blank screen after logout by clearing session then navigate('/', { replace:true }); and on login success redirect admins to '/studio' with replace:true while non-admins do not navigate; do not add routes or change root/header/router/guards/compiled files; redeploy",
+      "reqIds": [],
       "status": "pending"
     }
   ],

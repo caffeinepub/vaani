@@ -1,76 +1,91 @@
 {
   "kind": "build_request",
-  "title": "Fix blank/white screen crash by ensuring Header uses TanStack Router hooks only when RouterProvider is mounted",
+  "title": "Fix logout blank-screen via root soft-redirect and add admin-only post-login redirect to /studio",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-53",
-      "text": "Fix the blank/white screen crash caused by TanStack Router context being unavailable when `frontend/src/components/Header.tsx` renders: ensure `Header` does not call `useRouterState()` and `useNavigate()` unless Router context exists, OR ensure `Header` only renders strictly inside the `RouterProvider` tree (source-level fix only; do not edit any compiled bundle files).",
+      "id": "REQ-61",
+      "text": "Update the AuthContext logout redirect behavior so that after any logout (manual logout or idle auto-logout) the app clears session state and then performs a soft redirect to the Creator Zone root route using `navigate('/', { replace: true })` (route must be `/`, and `/creator-zone` must not be used).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-13"
+          "msg-5"
         ],
         "quotes": [
-          "Update the Header source file so that it does NOT call useRouterState / useNavigate unless Router context exists,\nOR\nMove Header to render strictly inside the RouterProvider tree."
+          "After logout:\n→ Clear session\n→ navigate('/', { replace: true })"
         ]
       },
       "acceptanceCriteria": [
-        "The app no longer crashes to a blank/white screen on load/refresh due to the router store error shown in the compiled bundle (`return useStore(router.__store, (state) => {})`).",
-        "`frontend/src/components/Header.tsx` no longer unconditionally calls TanStack Router hooks (`useRouterState`, `useNavigate`) when Router context is not yet available.",
-        "No compiled/build output files are edited as part of the fix (only source files)."
+        "When the user clicks Log out, the app clears Internet Identity session state and React Query cache, then navigates to `/` with `{ replace: true }` (no hard reload).",
+        "When the user is auto-logged-out due to idleness, the app clears session state and React Query cache, then navigates to `/` with `{ replace: true }` (no hard reload).",
+        "The codebase does not navigate to `/creator-zone` anywhere as part of this logout flow."
       ]
     },
     {
-      "id": "REQ-54",
-      "text": "Update the application mounting so the routed app is rendered through TanStack Router using the existing `routeTree` (with `/` and `/studio`), ensuring the RouterProvider is mounted before any component that calls TanStack Router hooks (including `Header`) can render.",
+      "id": "REQ-62",
+      "text": "Implement role-based post-login navigation strictly in the login success path: after a successful Internet Identity login initiated by the app’s Login action, if the authenticated user is confirmed admin, perform `navigate('/studio', { replace: true })`; if the user is non-admin, perform no navigation (remain on the current page, which is `/`).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-13"
+          "msg-5"
         ],
         "quotes": [
-          "The root cause is that Header is calling useRouterState() before the RouterProvider is mounted."
+          "After login:\n• If admin → navigate('/studio', { replace: true })\n• If non-admin → no navigation (remain on current page /)",
+          "Use replace: true and apply this only in the login success handler."
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/src/main.tsx` mounts the application under a TanStack `RouterProvider` that uses the existing router created from `frontend/src/router.ts` and `frontend/src/routeTree.tsx`.",
-        "Route paths and definitions remain unchanged (still `/` -> `App`, `/studio` -> `Studio`).",
-        "After deployment, navigating between `/` and `/studio` works without router-context crashes."
+        "If login succeeds and the user is admin, the app navigates to `/studio` using `{ replace: true }`.",
+        "If login succeeds and the user is not admin, the app does not call `navigate()` as part of the login success handling.",
+        "The admin redirect occurs only as a consequence of a successful login action (i.e., it does not trigger on normal page load/rehydration when an identity is already present)."
       ]
     },
     {
-      "id": "REQ-55",
-      "text": "Redeploy after applying the router-provider order fix and verify the initial load no longer results in a blank/white screen.",
+      "id": "REQ-63",
+      "text": "Keep routing and existing guards unchanged while applying these UX fixes: do not introduce any new routes, do not change the routing structure, and do not modify root layout, Header, router setup, Studio guards, or any compiled/built bundle files as part of this change.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-13"
+          "msg-5"
         ],
         "quotes": [
-          "Proceed with this fix and redeploy."
+          "Do not introduce new routes.\nDo not change routing structure.",
+          "❌ Do not modify root, header, router, auth guards, or compiled files."
         ]
       },
       "acceptanceCriteria": [
-        "A new deployment is produced with the fix.",
-        "On first paint / initial load, the UI renders (no blank/white screen) and the console no longer shows the router `__store`/`_store` null-access crash."
+        "Only the scoped redirect logic is changed; no new routes are added (still only `/` and `/studio`).",
+        "No changes are made to routeTree route definitions/paths or router instantiation.",
+        "No compiled/bundled output files are edited."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any compiled/bundled files (the error line shown is from the compiled router bundle).",
-    "Do not ask the user for more screenshots.",
-    "Do not change authentication behavior, admin/role logic, backend code, or route definitions/paths (`/` and `/studio`).",
-    "Keep changes narrowly scoped to resolving the Router context crash (provider order and/or Header hook-usage guard).",
-    "Use English for any user-facing text."
+    "Creator Zone route is `/` (root).",
+    "`/creator-zone` does not exist and must not be introduced or used.",
+    "Do not introduce new routes.",
+    "Do not change routing structure.",
+    "Do not modify root, Header, router setup, or Studio auth guard logic.",
+    "Do not edit any compiled/built files; source-only changes.",
+    "User-facing text (if any is added/changed) must be in English."
   ],
   "nonGoals": [
-    "Refactoring unrelated UI/components beyond what is necessary to fix the Router context crash.",
-    "Adding new auth flows, role features, or backend endpoints.",
-    "Changing the existing navigation structure or introducing new routes."
+    "Adding or changing any authentication UI flows beyond the specified redirects.",
+    "Changing backend logic, roles, or admin determination rules.",
+    "Refactoring unrelated components or adding new navigation tabs/pages."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -4,10 +4,13 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
-import { Mic, Plus, Loader2 } from 'lucide-react';
+import { Mic, Plus, Loader2, X } from 'lucide-react';
 import { useSubmitAudioForApproval } from '../hooks/useQueries';
 import { Variant_Studio_CreatorZone } from '../backend';
 import { toast } from 'sonner';
+import CreatorZoneAuthControls from './CreatorZoneAuthControls';
+import { useAuth } from '../contexts/AuthContext';
+import { Alert, AlertDescription } from './ui/alert';
 
 export default function CreatorZoneTab() {
   const [audioId, setAudioId] = useState('');
@@ -15,6 +18,7 @@ export default function CreatorZoneTab() {
   const [isPremium, setIsPremium] = useState(false);
 
   const submitMutation = useSubmitAudioForApproval();
+  const { autoLogoutReason, dismissIdleNotice } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,12 +54,35 @@ export default function CreatorZoneTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>🔵 Creator Zone</CardTitle>
-        <CardDescription>
-          Submit audio metadata for admin approval
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>🔵 Creator Zone</CardTitle>
+            <CardDescription>
+              Submit audio metadata for admin approval
+            </CardDescription>
+          </div>
+          <CreatorZoneAuthControls />
+        </div>
       </CardHeader>
       <CardContent>
+        {autoLogoutReason === 'idle' && (
+          <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <AlertDescription className="flex items-center justify-between">
+              <span className="text-amber-900 dark:text-amber-200">
+                You were logged out due to inactivity.
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={dismissIdleNotice}
+                className="h-6 w-6 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="audioId">Audio ID</Label>

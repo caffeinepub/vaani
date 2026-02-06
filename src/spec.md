@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the blank/white screen crash by ensuring TanStack Router context is available before any component (including `Header`) calls TanStack Router hooks.
+**Goal:** Fix logout blank-screen behavior with a root soft-redirect, and add an admin-only post-login redirect to Studio without changing the routing structure.
 
 **Planned changes:**
-- Update `frontend/src/main.tsx` to mount the app under TanStack `RouterProvider` using the existing router/route tree so router context exists before routed components render.
-- Update `frontend/src/components/Header.tsx` so it does not unconditionally call `useRouterState()` / `useNavigate()` when router context is not available (or ensure `Header` only renders within the `RouterProvider` tree).
-- Produce a new deployment build after applying the fix and verify initial load/refresh no longer results in a blank/white screen and the router store crash is gone.
+- Update AuthContext logout flow (manual logout and idle auto-logout) to clear session state and React Query cache, then soft-redirect to `/` via `navigate('/', { replace: true })` (no hard reload; do not use `/creator-zone`).
+- Update the login success handler so that only after an app-initiated successful login: admins soft-redirect to `/studio` via `navigate('/studio', { replace: true })`; non-admins do not trigger navigation.
+- Keep existing routes, router setup, layouts, Header, and Studio guards unchanged; apply only the scoped redirect logic changes in source files.
 
-**User-visible outcome:** The app loads and renders normally on first load/refresh (no blank/white screen), and navigation between `/` and `/studio` works without router-context crashes.
+**User-visible outcome:** After logout (manual or idle), users reliably return to the app root (`/`) without a blank screen; after logging in, admins are taken directly to `/studio` while non-admin users remain on `/`.

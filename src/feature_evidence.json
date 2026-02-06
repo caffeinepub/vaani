@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-application-mounting-so-the-routed-app-is-rendered-through-tanstack-router-using-the-existing-routetree-with-and-studio-ensuring-the-routerprovider-is-mounted-before-any-component-that-calls-tanstack-router-hooks-including-header-can-render",
-      "featureTitle": "Update the application mounting so the routed app is rendered through TanStack Router using the existing `routeTree` (with `/` and `/studio`), ensuring the RouterProvider is mounted before any component that calls TanStack Router hooks (including `Header`) can render.",
+      "featureId": "feature-update-the-authcontext-logout-redirect-behavior-so-that-after-any-logout-manual-logout-or-idle-auto-logout-the-app-clears-session-state-and-then-performs-a-soft-redirect-to-the-creator-zone-root-route-using-navigate-replace-true-route-must-be-and-creator-zone-must-not-be-used",
+      "featureTitle": "Update the AuthContext logout redirect behavior so that after any logout (manual logout or idle auto-logout) the app clears session state and then performs a soft redirect to the Creator Zone root route using `navigate('/', { replace: true })` (route must be `/`, and `/creator-zone` must not be used).",
       "files": [
-        "frontend/src/routeTree.tsx"
+        "frontend/src/contexts/AuthContext.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -16,7 +16,45 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-54"
+        "REQ-61"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-role-based-post-login-navigation-strictly-in-the-login-success-path-after-a-successful-internet-identity-login-initiated-by-the-app-s-login-action-if-the-authenticated-user-is-confirmed-admin-perform-navigate-studio-replace-true-if-the-user-is-non-admin-perform-no-navigation-remain-on-the-current-page-which-is",
+      "featureTitle": "Implement role-based post-login navigation strictly in the login success path: after a successful Internet Identity login initiated by the app’s Login action, if the authenticated user is confirmed admin, perform `navigate('/studio', { replace: true })`; if the user is non-admin, perform no navigation (remain on the current page, which is `/`).",
+      "files": [
+        "frontend/src/contexts/AuthContext.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-62"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-keep-routing-and-existing-guards-unchanged-while-applying-these-ux-fixes-do-not-introduce-any-new-routes-do-not-change-the-routing-structure-and-do-not-modify-root-layout-header-router-setup-studio-guards-or-any-compiled-built-bundle-files-as-part-of-this-change",
+      "featureTitle": "Keep routing and existing guards unchanged while applying these UX fixes: do not introduce any new routes, do not change the routing structure, and do not modify root layout, Header, router setup, Studio guards, or any compiled/built bundle files as part of this change.",
+      "files": [
+        "frontend/src/contexts/AuthContext.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-63"
       ],
       "confidence": "high"
     }

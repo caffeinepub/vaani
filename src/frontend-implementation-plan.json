@@ -1,62 +1,53 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Prevent TanStack Router context crash by mounting RouterProvider before Header renders",
+  "title": "Fix logout soft-redirect to root and add admin-only post-login redirect to Studio",
   "requirements": [
     {
-      "id": "REQ-53",
-      "summary": "Eliminate the blank/white screen crash by ensuring Header does not execute TanStack Router hooks before router context exists (by guaranteeing Header only renders under RouterProvider).",
+      "id": "REQ-61",
+      "summary": "Ensure all logout paths clear session + React Query cache, then soft-redirect to `/` with history replace (never `/creator-zone`).",
       "acceptanceCriteria": [
-        "The app no longer crashes to a blank/white screen on load/refresh due to the router store error shown in the compiled bundle (`return useStore(router.__store, (state) => {})`).",
-        "`frontend/src/components/Header.tsx` no longer unconditionally calls TanStack Router hooks (`useRouterState`, `useNavigate`) when Router context is not yet available.",
-        "No compiled/build output files are edited as part of the fix (only source files)."
+        "When the user clicks Log out, the app clears Internet Identity session state and React Query cache, then navigates to `/` with `{ replace: true }` (no hard reload).",
+        "When the user is auto-logged-out due to idleness, the app clears session state and React Query cache, then navigates to `/` with `{ replace: true }` (no hard reload).",
+        "The codebase does not navigate to `/creator-zone` anywhere as part of this logout flow."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/contexts/AuthContext.tsx",
           "operation": "modify",
-          "description": "Adjust Header to be safe with TanStack Router context availability by relying on RouterProvider-first mounting (and removing any assumptions that it can render outside the routed tree). Ensure any TanStack Router hook usage cannot execute before RouterProvider is mounted; keep the change narrowly scoped and source-only."
+          "description": "Update manual logout and idle auto-logout flows to (1) clear Internet Identity session state, (2) clear React Query cache, and then perform a soft redirect to the Creator Zone root route `/` using navigation with `replace: true` (no hard reload). Ensure this redirect logic never targets `/creator-zone`. Use the existing authorization component’s guidance to clear all cached application data on logout. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-54",
-      "summary": "Mount the app through TanStack RouterProvider using the existing router/routeTree so routed components (including Header) only render after router context is established.",
+      "id": "REQ-62",
+      "summary": "Add role-based post-login navigation only in the app-initiated login success path: admin → `/studio` replace; non-admin → no navigation.",
       "acceptanceCriteria": [
-        "`frontend/src/main.tsx` mounts the application under a TanStack `RouterProvider` that uses the existing router created from `frontend/src/router.ts` and `frontend/src/routeTree.tsx`.",
-        "Route paths and definitions remain unchanged (still `/` -> `App`, `/studio` -> `Studio`).",
-        "After deployment, navigating between `/` and `/studio` works without router-context crashes."
+        "If login succeeds and the user is admin, the app navigates to `/studio` using `{ replace: true }`.",
+        "If login succeeds and the user is not admin, the app does not call `navigate()` as part of the login success handling.",
+        "The admin redirect occurs only as a consequence of a successful login action (i.e., it does not trigger on normal page load/rehydration when an identity is already present)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/main.tsx",
+          "path": "frontend/src/contexts/AuthContext.tsx",
           "operation": "modify",
-          "description": "Replace direct <App /> mounting with TanStack RouterProvider mounted above the routed app. Import and use the existing router from `frontend/src/router.ts` so RouterProvider is mounted before any route component (and thus before Header) can render."
-        },
-        {
-          "path": "frontend/src/router.ts",
-          "operation": "modify",
-          "description": "Verify router export shape remains compatible with RouterProvider usage from `frontend/src/main.tsx` and that it still uses the existing `routeTree` without changing any route paths/definitions."
-        },
-        {
-          "path": "frontend/src/routeTree.tsx",
-          "operation": "modify",
-          "description": "Confirm the routeTree continues to define the same routes (`/` -> App, `/studio` -> Studio) and is correctly consumed by the router; do not change route paths/definitions."
+          "description": "Implement an app-initiated-login flag and a login-success handler that runs only after the user clicks the app’s Login action and Internet Identity login succeeds. In that success handler, confirm admin status (e.g., via existing role/admin query hooks backed by the authorization system) and only then soft-navigate to `/studio` with `replace: true`; if non-admin, do not navigate. Ensure this logic does not run on identity rehydration/initialization. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-55",
-      "summary": "Prepare for redeployment and provide a verification checklist to confirm initial load no longer results in a blank/white screen after the RouterProvider order fix.",
+      "id": "REQ-63",
+      "summary": "Apply the redirect UX fixes without changing routing structure, guards, root layout, Header, router setup, or compiled outputs.",
       "acceptanceCriteria": [
-        "A new deployment is produced with the fix.",
-        "On first paint / initial load, the UI renders (no blank/white screen) and the console no longer shows the router `__store`/`_store` null-access crash."
+        "Only the scoped redirect logic is changed; no new routes are added (still only `/` and `/studio`).",
+        "No changes are made to routeTree route definitions/paths or router instantiation.",
+        "No compiled/bundled output files are edited."
       ],
       "file_operations": [
         {
-          "path": "frontend/DEPLOYMENT.md",
-          "operation": "create",
-          "description": "Document the redeploy steps and a short post-deploy verification checklist focused on (1) initial load/refresh rendering without a blank/white screen and (2) navigation between `/` and `/studio` without router-context crashes. Keep scope limited to this fix."
+          "path": "frontend/src/contexts/AuthContext.tsx",
+          "operation": "modify",
+          "description": "Keep all changes scoped to AuthContext redirect behavior only (logout redirect + post-login admin redirect) and avoid touching routeTree, router instantiation, root layout, Header, Studio guards, or any compiled/bundled outputs; verify navigation targets remain limited to existing routes `/` and `/studio`."
         }
       ]
     }

@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Home page component that renders the Creator Zone welcome section without Header/Footer (now handled by root layout).",
+  "frontend/src/App.tsx": "Home page component that wraps Creator Zone content with AuthProvider at child level, ensuring Creator Zone always renders while auth sync runs in the background without blocking UI.",
   "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations with identity-scoped query keys (including principal ID) for profile, role, and admin queries; configured with staleTime: 0 and refetchOnMount: 'always' to ensure fresh data after login.",
   "frontend/src/components/Header.tsx": "Sticky header with VAANI branding, Studio navigation button for admins (hidden until mounted AND admin status confirmed to prevent transient state leaks), user dropdown menu with logout, and login-transition effect that clears cached queries; all hooks called unconditionally at top level per React rules.",
   "frontend/src/components/Footer.tsx": "Footer component with copyright and caffeine.ai attribution with heart icon.",
@@ -10,7 +10,7 @@
   "frontend/tailwind.config.js": "Tailwind configuration with custom purple-themed color tokens and Inter font family.",
   "frontend/src/main.tsx": "Application entry point that mounts RouterProvider (with router from router.ts) inside QueryClient and InternetIdentity contexts, ensuring Router context is available before any components using router hooks render.",
   "frontend/src/components/StudioTab.tsx": "Studio tab displaying all approved audio metadata with duration, premium status, and upload source badges.",
-  "frontend/src/components/CreatorZoneTab.tsx": "Creator Zone tab with form for submitting audio metadata (ID, duration, premium flag) for admin approval.",
+  "frontend/src/components/CreatorZoneTab.tsx": "Creator Zone tab with audio submission form, now includes CreatorZoneAuthControls in the card header and displays a dismissible inline alert when user is auto-logged out due to inactivity; Creator Zone content always remains visible.",
   "frontend/src/routeTree.tsx": "Router configuration with root layout that renders Header, Outlet for route content, and Footer; ensures Header is always inside RouterProvider tree and can safely call router hooks.",
   "frontend/src/pages/Studio.tsx": "Admin-only Studio page with child-level guard that redirects non-admin users to home; displays admin dashboard without Header/Footer (now handled by root layout).",
   "frontend/src/hooks/useActor.ts": "Handles backend actor initialization with automatic admin role assignment for the specified Principal ID (p2vep-zzrn7-7ra2w-dbv1z-yeqlj-tyskb-pjhpt-dx3u3-dkhuu-ivsbx-uae); includes query invalidation on actor changes.",
@@ -21,5 +21,7 @@
   "frontend/src/components/HydrationTimeoutBanner.tsx": "Non-blocking informational banner that always returns a valid React element (hidden div when not timed out, visible banner when timed out) to comply with no-null-returns constraint in layout paths.",
   "frontend/src/components/SafeRoot.tsx": "Root wrapper component that guarantees always-visible first paint by wrapping hydration logic and deferring all async auth/profile/admin checks until after initial UI render; never returns null/undefined/empty.",
   "frontend/src/components/AppShell.tsx": "Stable application frame component that always renders header, banner, main content slot, and footer; never returns null/undefined/empty and provides consistent layout structure.",
-  "frontend/src/router.ts": "Creates and exports the TanStack Router instance using the existing routeTree; includes TypeScript module augmentation for type safety."
+  "frontend/src/router.ts": "Creates and exports the TanStack Router instance using the existing routeTree; includes TypeScript module augmentation for type safety.",
+  "frontend/src/contexts/AuthContext.tsx": "React context that provides authentication state (isAuthenticated), login/logout actions with soft redirects (logout → `/` with replace, login success for admin → `/studio` with replace), idle-based auto-logout with 5-minute timer and activity listeners, and auto-logout notice state; all redirects use navigate with replace: true and clear React Query cache on logout without blocking UI.",
+  "frontend/src/components/CreatorZoneAuthControls.tsx": "Small auth control component that displays \"Log in\" button when unauthenticated and \"Log out\" button when authenticated, with loading state during login; uses AuthContext and existing shadcn Button with lucide icons."
 }
