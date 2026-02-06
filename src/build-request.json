@@ -1,0 +1,94 @@
+{
+  "kind": "build_request",
+  "title": "Add admin-first audio metadata submission and approval workflow (backend only)",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-5",
+      "text": "Extend `backend/main.mo` with an Audio Metadata data model (metadata only; no audio file data) containing exactly these fields: `id`, `ownerPrincipal`, `uploadedFrom` (variant: `#Studio` | `#CreatorZone`), `duration`, `isApproved`, `isPremium`.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "1) Audio Metadata (no audio files yet)\n   - id\n   - ownerPrincipal\n   - uploadedFrom: Studio | CreatorZone\n   - duration\n   - isApproved\n   - isPremium"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The backend exposes a Motoko public type representing Audio Metadata with the listed fields and an `uploadedFrom` variant supporting `Studio` and `CreatorZone`.",
+        "No audio bytes, chunking, file storage, playback, or recording-related fields or methods are added."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Implement a Creator Zone submission flow in `backend/main.mo` where an authenticated caller can submit audio metadata into a pending queue, and pending submissions are not publicly visible by default.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "2) Creator Zone Submission Flow (metadata only)\n   - Creators can submit audio metadata to a pending queue\n   - Submitted items are NOT public by default"
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a backend method for authenticated users to create a pending submission that sets `ownerPrincipal = caller`, `uploadedFrom = #CreatorZone`, and `isApproved = false`.",
+        "Pending submissions are stored separately from approved/public audio metadata.",
+        "No backend query accessible to anonymous/public users returns pending submissions."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Implement VAANI Studio (admin panel) backend operations in `backend/main.mo` so an admin can: (1) list all pending submissions, and (2) approve or reject a pending submission by id. Only approved audio metadata becomes visible to non-admin users.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "3) VAANI Studio (Admin Panel)\n   - Admin can view all pending submissions\n   - Admin can approve or reject submissions\n   - Only approved audio metadata becomes visible to users"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin-only method exists to list all pending submissions (returns the pending items and includes their ids).",
+        "Admin-only method exists to approve a pending submission by id; approved items are moved/marked so they appear in the public approved-audio read API.",
+        "Admin-only method exists to reject a pending submission by id; rejected items no longer appear in the pending list and do not appear in approved/public reads.",
+        "A public (non-admin) read API exists that returns only approved audio metadata."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Enforce access rules for the audio metadata workflow in `backend/main.mo`: only admins can approve/reject; public users can read only approved audio metadata; and the submitter cannot self-approve their own submission (even if they otherwise have permissions).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "4) Access Rules\n   - Only Admin can approve/reject\n   - Public users can read ONLY approved audio metadata\n   - Creator cannot self-approve"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Approve/reject endpoints trap or otherwise deny when called by a non-admin.",
+        "Public/anonymous queries never return unapproved audio metadata.",
+        "Approve endpoint denies when `caller == ownerPrincipal` for the target submission (self-approval prevention)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain single-actor with all Motoko logic in `backend/main.mo`.",
+    "Do not modify existing authentication, role management, or frontend UI code.",
+    "Keep implementation minimal, clean, and extendable."
+  ],
+  "nonGoals": [
+    "Audio file upload/storage.",
+    "Recording UI or recording features.",
+    "Playback features.",
+    "Subscriptions, payments, or creator earnings."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

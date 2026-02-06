@@ -1,0 +1,64 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-06T08:00:11.013Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 4,
+    "implemented": 0,
+    "items": [
+      {
+        "id": "REQ-5",
+        "summary": "Extend `backend/main.mo` with an Audio Metadata data model (metadata only; no audio file data) containing exactly these fields: `id`, `ownerPrincipal`, `uploadedFrom` (variant: `#Studio` | `#CreatorZone`), `duration`, `isApproved`, `isPremium`.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Implement a Creator Zone submission flow in `backend/main.mo` where an authenticated caller can submit audio metadata into a pending queue, and pending submissions are not publicly visible by default.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Implement VAANI Studio (admin panel) backend operations in `backend/main.mo` so an admin can: (1) list all pending submissions, and (2) approve or reject a pending submission by id. Only approved audio metadata becomes visible to non-admin users.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Enforce access rules for the audio metadata workflow in `backend/main.mo`: only admins can approve/reject; public users can read only approved audio metadata; and the submitter cannot self-approve their own submission (even if they otherwise have permissions).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "build-request.json",
+    "build-template/README.md",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/AdminPanel.tsx",
+    "frontend/src/components/CreatorZoneTab.tsx",
+    "frontend/src/components/Dashboard.tsx",
+    "frontend/src/components/StudioTab.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

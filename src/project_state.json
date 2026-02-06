@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "VAANI: voice-first creator/listener platform MVP focused on a clean Motoko backend foundation (profiles, auth via caller Principal, admin roles) plus an admin-first audio metadata submission/approval workflow (metadata only; no audio files). Recording, playback, subscriptions/payments, and creator earnings are explicitly deferred.",
+  "architectural_notes": [
+    "Implement as a mobile-first web app backend; defer recording, subscription billing/checkout sync, and earnings features for now.",
+    "Admin-first moderation workflow: creator submissions enter a pending queue; only admin-approved metadata is visible via public read APIs; no audio file storage/processing in this phase."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Backend foundation for VAANI (minimal structure to extend incrementally)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "User profile model: name, role, subscription flag",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Basic authentication (backend)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Admin role setup and authorization scaffolding",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Audio upload endpoint placeholders/stubs (no full audio logic)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Create a minimal Motoko backend foundation in `backend/main.mo` that models and persists a user profile with: display name, role, and subscription flag, keyed by the authenticated caller Principal.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Implement basic authentication/identity handling based on the Internet Computer caller Principal (no passwords): provide backend methods that require an authenticated caller and allow the caller to create/update their own user profile.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Add admin role setup and authorization scaffolding: support at least one initial admin and enforce role checks for admin-only operations.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Add empty placeholders (stubs) for audio upload-related backend endpoints and types without implementing full audio logic or storage.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Define Audio Metadata model (no audio files): id, ownerPrincipal, uploadedFrom (Studio|CreatorZone), duration, isApproved, isPremium",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Creator Zone submission flow (metadata only): creators submit audio metadata into a pending queue; submissions are not public by default",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "VAANI Studio admin panel backend operations: admin can view all pending submissions and approve/reject them",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Access rules enforcement for audio metadata: only admin can approve/reject; public reads only approved; creators cannot self-approve",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Extend `backend/main.mo` with an Audio Metadata data model (metadata only; no audio file data) containing exactly these fields: `id`, `ownerPrincipal`, `uploadedFrom` (variant: `#Studio` | `#CreatorZone`), `duration`, `isApproved`, `isPremium`.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Implement a Creator Zone submission flow in `backend/main.mo` where an authenticated caller can submit audio metadata into a pending queue, and pending submissions are not publicly visible by default.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Implement VAANI Studio (admin panel) backend operations in `backend/main.mo` so an admin can: (1) list all pending submissions, and (2) approve or reject a pending submission by id. Only approved audio metadata becomes visible to non-admin users.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Enforce access rules for the audio metadata workflow in `backend/main.mo`: only admins can approve/reject; public users can read only approved audio metadata; and the submitter cannot self-approve their own submission (even if they otherwise have permissions).",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "VAANI",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

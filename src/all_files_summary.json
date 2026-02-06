@@ -1,0 +1,23 @@
+{
+  "backend/main.mo": "Motoko actor handling access control, user profiles, and audio metadata submission and retrieval with admin‑gated approval flow.",
+  "feature_evidence.json": "Placeholder feature evidence report containing an empty features list.",
+  "frontend-file-summaries.txt": "Text file summarizing each frontend source file for reference.",
+  "frontend/index.css": "Tailwind base/style definitions with extensive OKLCH color variables for light and dark themes.",
+  "frontend/index.html": "Basic HTML entry point mounting the React app and loading main.tsx.",
+  "frontend/src/App.tsx": "Main React app handling authentication, profile loading, and routing between welcome, profile setup, and dashboard views.",
+  "frontend/src/components/AdminPanel.tsx": "Admin interface for reviewing audio submissions, approving or rejecting them, and viewing artist profiles.",
+  "frontend/src/components/CreatorZoneTab.tsx": "Form for creators to submit audio metadata for admin approval with validation and mutation handling.",
+  "frontend/src/components/Dashboard.tsx": "User dashboard showing Studio and Creator Zone tabs and conditionally the admin panel based on role.",
+  "frontend/src/components/Footer.tsx": "Renders a footer with branding and links, including a caffeine.ai attribution icon.",
+  "frontend/src/components/Header.tsx": "Displays the app header with user auth state, profile dropdown, and logout handling.",
+  "frontend/src/components/ProfileSetup.tsx": "Provides a form for creating a user profile with display name and saves it via mutation.",
+  "frontend/src/components/StudioTab.tsx": "Shows approved audio items with duration and premium labels, including loading and empty states.",
+  "frontend/src/hooks/useActor.ts": "Creates and manages an authenticated or anonymous backend actor and refreshes dependent queries when it changes.",
+  "frontend/src/hooks/useInternetIdentity.ts": "Implements Internet Identity auth context, managing login, logout, identity loading, and status tracking.",
+  "frontend/src/hooks/useQueries.ts": "Defines React Query hooks for user profiles, roles, audio submissions, and admin actions using the backend actor.",
+  "frontend/src/index.css": "Tailwind CSS setup defining light and dark theme variables and base styling.",
+  "frontend/src/main.tsx": "Bootstraps the React app with QueryClientProvider and InternetIdentityProvider.",
+  "frontend/src/utils/urlParams.ts": "Provides helpers to read URL parameters (including hash), persist them in sessionStorage, and clear them from the hash.",
+  "frontend/tailwind.config.js": "Configures Tailwind with custom colors, themes, animations, typography, container queries, and plugins.",
+  "project_state.json": "Stores the project’s current state, versioning, and a list of pending feature requests for the VAANI backend and workflow."
+}

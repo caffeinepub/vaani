@@ -1,0 +1,14 @@
+{
+  "frontend/src/App.tsx": "Main application component with authentication flow, profile setup, and dashboard routing with proper null checks to prevent undefined values.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations including profile management, role queries, admin functions, and new audio metadata submission/approval workflow.",
+  "frontend/src/components/Header.tsx": "Sticky header with VAANI branding and user dropdown menu showing profile info and logout option.",
+  "frontend/src/components/Footer.tsx": "Footer component with copyright and caffeine.ai attribution with heart icon.",
+  "frontend/src/components/ProfileSetup.tsx": "Profile setup form for first-time users to enter their display name after authentication.",
+  "frontend/src/components/Dashboard.tsx": "Main dashboard with tabbed interface for Studio and Creator Zone sections, plus admin panel for admins; now uses separate tab components for better organization.",
+  "frontend/src/components/AdminPanel.tsx": "Admin panel with tabbed interface showing pending audio submissions for approval/rejection and user management; includes self-approval prevention.",
+  "frontend/src/index.css": "Global styles with OKLCH color system using purple accent theme for VAANI branding.",
+  "frontend/tailwind.config.js": "Tailwind configuration with custom purple-themed color tokens and Inter font family.",
+  "frontend/src/main.tsx": "Application entry point with QueryClient, InternetIdentity, ThemeProvider, and Toaster setup.",
+  "frontend/src/components/StudioTab.tsx": "Studio tab displaying all approved audio metadata with duration, premium status, and upload source badges.",
+  "frontend/src/components/CreatorZoneTab.tsx": "Creator Zone tab with form for submitting audio metadata (ID, duration, premium flag) for admin approval."
+}
