@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 47,
-  "summary": "VAANI: Version 21 remains the stable baseline with strict constraints (do not modify root, RouterProvider, Header, routing structure, auth guards, or compiled files). Two scoped UX fixes are required: (1) after logout, clear session and soft-redirect via navigate('/', { replace: true }) to prevent occasional blank screen; (2) on successful login, redirect only in the login success handler—admins navigate('/studio', { replace: true }), non-admins perform no navigation (remain on /). Creator Zone route is '/' and /creator-zone must not be introduced or used.",
+  "projectStateVersion": 53,
+  "summary": "VAANI: Version 21 remains the stable baseline with strict constraints (do not modify root, RouterProvider, Header, routing structure, auth guards, or compiled files). Auth-state synchronization fix required: navigation must react to auth state changes via a single useEffect watcher over identity/isAuthenticated/isAdmin (no button-handler navigation, no redirects during render). On login (identity becomes non-null): if isAdmin===true navigate('/studio', { replace:true }) else stay on '/'. On logout (identity becomes null): clear session then navigate('/', { replace:true }). Creator Zone route is '/' and /creator-zone must not be introduced or used. NEW blocking issue in v24: crash `useAuth must be used within AuthProvider` indicates components (e.g., CreatorZoneTab/Header/Studio) render outside AuthProvider. Required fix: ensure AuthProvider wraps the entire app tree including RouterProvider and all routes, exactly `<AuthProvider><RouterProvider><App/></RouterProvider></AuthProvider>`, with no guards/conditional hooks or moving useAuth into effects. Apply provider-order fix and redeploy.",
   "architectural_notes": [
     "Implement as a mobile-first web app backend; defer recording, subscription billing/checkout sync, and earnings features for now.",
     "Admin-first moderation workflow: creator submissions enter a pending queue; only admin-approved metadata is visible via public read APIs; no audio file storage/processing in this phase.",
@@ -24,7 +24,7 @@
     "Critical blank-screen cause: Router context crash — Header renders outside/ לפני Router provider while using router hooks, causing 'Cannot read properties of null (reading \\\"store\\\")' and React to crash before mount.",
     "Version 18 still crashes with TanStack Router context error: \"Cannot read properties of null (reading '_store')\" in compiled bundle (index-Drqlw32l.js), indicating Header/router-hook usage still runs before Router provider is mounted.",
     "Crash proof confirmed: blank/white screen persists with console error `Cannot read properties of null (reading '__store')`, caused by `Header` calling TanStack Router hooks before `RouterProvider` exists (provider-order issue).",
-    "Crash evidence from browser points into compiled TanStack Router bundle at `return useStore(router.__store, (state) => {})`, consistent with Header calling router hooks before RouterProvider is mounted."
+    "Critical crash/blank screen: `Uncaught Error: useAuth must be used within AuthProvider` originating from CreatorZoneTab indicates a useAuth consumer is rendering outside AuthProvider during login/logout transitions; requires top-level provider order fix (AuthProvider must wrap RouterProvider + all routes/components, without conditional provider presence)."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -403,6 +403,70 @@
         "REQ-63"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-implement-a-single-auth-state-navigation-watcher-useeffect-that-reacts-to-identity-isauthenticated-and-isadmin-and-performs-all-login-logout-redirects-only-from-that-effect-no-redirects-during-render-no-auth-driven-navigation-in-button-handlers",
+      "title": "Implement a single auth-state navigation watcher (`useEffect`) that reacts to `identity`, `isAuthenticated`, and `isAdmin`, and performs ALL login/logout redirects only from that effect (no redirects during render; no auth-driven navigation in button handlers).",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-login-identity-becomes-non-null-the-auth-state-watcher-must-navigate-admins-to-studio-and-keep-non-admins-on-the-home-route-if-isadmin-true-then-navigate-studio-replace-true-else-do-not-navigate-away-from",
+      "title": "On LOGIN (identity becomes non-null), the auth-state watcher must navigate admins to Studio and keep non-admins on the home route: if `isAdmin === true` then `navigate('/studio', { replace: true })`; else do not navigate away from `/`.",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-logout-identity-becomes-null-the-auth-state-watcher-must-clear-session-related-client-state-and-then-navigate-replace-true-clear-session-must-include-clearing-identity-scoped-cached-data-to-prevent-authenticated-state-leaking-into-the-logged-out-view",
+      "title": "On LOGOUT (identity becomes null), the auth-state watcher must clear session-related client state and then `navigate('/', { replace: true })`. \"Clear session\" must include clearing identity-scoped cached data to prevent authenticated state leaking into the logged-out view.",
+      "reqIds": [
+        "REQ-66"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-disable-any-existing-auth-driven-navigation-that-is-currently-performed-outside-the-single-auth-state-watcher-e-g-navigation-inside-logout-handlers-idle-timeout-callbacks-or-post-login-success-handlers-while-preserving-the-existing-routing-structure-and-routes-and-studio",
+      "title": "Remove/disable any existing auth-driven navigation that is currently performed outside the single auth-state watcher (e.g., navigation inside logout handlers, idle-timeout callbacks, or post-login success handlers), while preserving the existing routing structure and routes (`/` and `/studio`).",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-no-component-that-calls-useauth-can-render-outside-authprovider-by-removing-any-nested-duplicated-authprovider-placement-in-the-routing-layer-and-consolidating-authprovider-to-the-single-top-level-provider-that-wraps-routerprovider",
+      "title": "Ensure no component that calls useAuth() can render outside AuthProvider by removing any nested/duplicated AuthProvider placement in the routing layer and consolidating AuthProvider to the single, top-level provider that wraps RouterProvider.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-adjust-authprovider-implementation-as-needed-so-it-can-be-mounted-outside-routerprovider-without-using-tanstack-router-hooks-e-g-remove-dependency-on-usenavigate-userouterstate-hooks-inside-authprovider-preserve-existing-navigation-behavior-and-keep-auth-driven-redirects-occurring-only-from-the-existing-single-auth-state-watcher-effect",
+      "title": "Adjust AuthProvider implementation as needed so it can be mounted outside RouterProvider without using TanStack Router hooks (e.g., remove dependency on useNavigate/useRouterState hooks inside AuthProvider). Preserve existing navigation behavior and keep auth-driven redirects occurring only from the existing single auth-state watcher effect.",
+      "reqIds": [
+        "REQ-70"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-verify-and-preserve-required-post-fix-auth-flows-end-to-end-after-redeploy-login-as-admin-navigates-to-studio-login-as-non-admin-stays-on-logout-redirects-to-app-never-shows-a-blank-screen-and-does-not-require-a-hard-refresh",
+      "title": "Verify and preserve required post-fix auth flows end-to-end after redeploy: login as admin navigates to /studio; login as non-admin stays on /; logout redirects to /; app never shows a blank screen and does not require a hard refresh.",
+      "reqIds": [
+        "REQ-71"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redeploy-a-new-version-after-applying-the-structural-provider-order-fix-and-verify-the-fix-in-the-deployed-environment-not-just-local-dev",
+      "title": "Redeploy a new version after applying the structural provider-order fix and verify the fix in the deployed environment (not just local dev).",
+      "reqIds": [
+        "REQ-74"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -641,9 +705,39 @@
       "status": "in_progress"
     },
     {
-      "id": "AR-41",
-      "summary": "Scoped UX fix: prevent blank screen after logout by clearing session then navigate('/', { replace:true }); and on login success redirect admins to '/studio' with replace:true while non-admins do not navigate; do not add routes or change root/header/router/guards/compiled files; redeploy",
+      "id": "AR-42",
+      "summary": "Auth-state synchronization fix: add a single useEffect watcher over identity/isAuthenticated/isAdmin to perform all post-login/logout navigation (admins -> /studio replace:true; non-admins stay on /; on logout clear session then navigate('/') ); no navigation in click handlers; no redirects during render; no new routes or routing structure changes; redeploy",
       "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Fix crash `useAuth must be used within AuthProvider` by ensuring AuthProvider wraps the entire app tree (including RouterProvider and all routes) so no useAuth consumer renders outside AuthProvider; provider-order fix only; redeploy",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Update the frontend application mounting so the AuthProvider wraps the ENTIRE routed application tree (RouterProvider + all routes/components) to eliminate the runtime crash \"Uncaught Error: useAuth must be used within AuthProvider\".\n\nThe required top-level structure must be:\n<AuthProvider>\n  <RouterProvider>\n    <App />\n  </RouterProvider>\n</AuthProvider>\n\nImplement this in the real TanStack Router setup by mounting the app through TanStack Router (using the existing router/routeTree) and ensuring AuthProvider is outside the RouterProvider so that no useAuth consumer (CreatorZoneTab, Header, Studio, etc.) can render outside AuthProvider.",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-45",
+      "summary": "Move `AuthProvider` to the absolute top of the React app tree so it unconditionally wraps `RouterProvider` and therefore all routes/components (including `CreatorZoneTab`), eliminating the runtime crash `Uncaught Error: useAuth must be used within AuthProvider` during login/logout transitions.",
+      "reqIds": [
+        "REQ-72"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-46",
+      "summary": "Audit and remove any duplicate/nested `AuthProvider` placements (if any exist) so there is exactly one `AuthProvider` instance wrapping the entire routed tree; ensure no route/layout/component can mount outside it.",
+      "reqIds": [
+        "REQ-73"
+      ],
       "status": "pending"
     }
   ],

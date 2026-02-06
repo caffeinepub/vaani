@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix logout blank-screen behavior with a root soft-redirect, and add an admin-only post-login redirect to Studio without changing the routing structure.
+**Goal:** Eliminate the `useAuth must be used within AuthProvider` crash by restructuring the React provider tree so `AuthProvider` always wraps the entire routed app (including `CreatorZoneTab`), and redeploy the fix.
 
 **Planned changes:**
-- Update AuthContext logout flow (manual logout and idle auto-logout) to clear session state and React Query cache, then soft-redirect to `/` via `navigate('/', { replace: true })` (no hard reload; do not use `/creator-zone`).
-- Update the login success handler so that only after an app-initiated successful login: admins soft-redirect to `/studio` via `navigate('/studio', { replace: true })`; non-admins do not trigger navigation.
-- Keep existing routes, router setup, layouts, Header, and Studio guards unchanged; apply only the scoped redirect logic changes in source files.
+- Update `frontend/src/main.tsx` so the app is rendered via TanStack Router’s `RouterProvider` using the existing `router`/`routeTree`, with `AuthProvider` mounted at the absolute top of the React tree.
+- Ensure `AuthProvider` unconditionally wraps `RouterProvider` (no conditional provider mounting) so all routes/components are always descendants of `AuthProvider`.
+- Audit the frontend route/layout/component tree and remove any duplicate or nested `AuthProvider` usages so there is exactly one top-level instance.
+- Produce and deploy a new version after the provider-order fix and verify the login/logout flow no longer triggers the crash or blank screen in the deployed environment.
 
-**User-visible outcome:** After logout (manual or idle), users reliably return to the app root (`/`) without a blank screen; after logging in, admins are taken directly to `/studio` while non-admin users remain on `/`.
+**User-visible outcome:** Users can load the app and perform login/logout transitions without a blank/white screen, and without the console error `Uncaught Error: useAuth must be used within AuthProvider` (including when `CreatorZoneTab` renders).

@@ -1,28 +1,21 @@
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
-import { useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
 import AdminPanel from '../components/AdminPanel';
 import FullScreenLoading from '../components/FullScreenLoading';
 
 export default function Studio() {
   const { identity } = useInternetIdentity();
   const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
-  const navigate = useNavigate();
 
   const isAuthenticated = !!identity;
   const isAdmin = userProfile?.role === 'admin';
 
-  useEffect(() => {
-    if (!profileLoading && (!isAuthenticated || !isAdmin)) {
-      navigate({ to: '/' });
-    }
-  }, [isAuthenticated, isAdmin, profileLoading, navigate]);
-
+  // Show loading while profile resolves
   if (profileLoading) {
     return <FullScreenLoading message="Loading Studio..." />;
   }
 
+  // Show loading if unauthorized (watcher will redirect)
   if (!isAuthenticated || !isAdmin) {
     return <FullScreenLoading message="Redirecting..." />;
   }

@@ -1,53 +1,57 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix logout soft-redirect to root and add admin-only post-login redirect to Studio",
+  "title": "Fix AuthProvider placement so useAuth never renders outside provider",
   "requirements": [
     {
-      "id": "REQ-61",
-      "summary": "Ensure all logout paths clear session + React Query cache, then soft-redirect to `/` with history replace (never `/creator-zone`).",
+      "id": "REQ-72",
+      "summary": "Mount AuthProvider at the absolute top of the app tree so it always wraps TanStack RouterProvider and all routed content, eliminating useAuth crash during auth transitions.",
       "acceptanceCriteria": [
-        "When the user clicks Log out, the app clears Internet Identity session state and React Query cache, then navigates to `/` with `{ replace: true }` (no hard reload).",
-        "When the user is auto-logged-out due to idleness, the app clears session state and React Query cache, then navigates to `/` with `{ replace: true }` (no hard reload).",
-        "The codebase does not navigate to `/creator-zone` anywhere as part of this logout flow."
+        "`frontend/src/main.tsx` no longer renders `<App />` directly; the routed application is rendered via TanStack Router’s `RouterProvider` using the existing `router`/`routeTree`.",
+        "The mounted provider order ensures `AuthProvider` wraps `RouterProvider` (and thus all routed content) without any conditional rendering of provider presence.",
+        "Reproducing the prior flow (initial load, then login, then logout) no longer produces the console error `useAuth must be used within AuthProvider`, and the UI does not blank/white-screen.",
+        "`CreatorZoneTab` (and any other `useAuth()` consumer) is never rendered outside `AuthProvider` at any point during transitions."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/contexts/AuthContext.tsx",
+          "path": "frontend/src/main.tsx",
           "operation": "modify",
-          "description": "Update manual logout and idle auto-logout flows to (1) clear Internet Identity session state, (2) clear React Query cache, and then perform a soft redirect to the Creator Zone root route `/` using navigation with `replace: true` (no hard reload). Ensure this redirect logic never targets `/creator-zone`. Use the existing authorization component’s guidance to clear all cached application data on logout. Verify the component's usage instructions before implementing."
+          "description": "Replace direct `<App />` rendering with TanStack Router’s `RouterProvider` using the existing exported `router`, and move `AuthProvider` (from `frontend/src/contexts/AuthContext.tsx`) to unconditionally wrap `RouterProvider` at the top of the React tree (above all routes/components, including `CreatorZoneTab`). Keep existing providers (React Query, Internet Identity) mounted without condition. Use the selected `authorization` component patterns for auth lifecycle expectations; verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-62",
-      "summary": "Add role-based post-login navigation only in the app-initiated login success path: admin → `/studio` replace; non-admin → no navigation.",
+      "id": "REQ-73",
+      "summary": "Remove any duplicate/nested AuthProvider usage so exactly one AuthProvider instance wraps the entire routed tree.",
       "acceptanceCriteria": [
-        "If login succeeds and the user is admin, the app navigates to `/studio` using `{ replace: true }`.",
-        "If login succeeds and the user is not admin, the app does not call `navigate()` as part of the login success handling.",
-        "The admin redirect occurs only as a consequence of a successful login action (i.e., it does not trigger on normal page load/rehydration when an identity is already present)."
+        "There is a single, top-level `AuthProvider` for the application; no nested/duplicate `AuthProvider` instances remain in route/layout/component trees.",
+        "No component that calls `useAuth()` can be reached/rendered unless it is a descendant of the single top-level `AuthProvider`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/contexts/AuthContext.tsx",
+          "path": "frontend/src/routeTree.tsx",
           "operation": "modify",
-          "description": "Implement an app-initiated-login flag and a login-success handler that runs only after the user clicks the app’s Login action and Internet Identity login succeeds. In that success handler, confirm admin status (e.g., via existing role/admin query hooks backed by the authorization system) and only then soft-navigate to `/studio` with `replace: true`; if non-admin, do not navigate. Ensure this logic does not run on identity rehydration/initialization. Verify the component's usage instructions before implementing."
+          "description": "Audit the routed layout tree to ensure it does not mount or re-mount `AuthProvider` (or any wrapper that includes it) anywhere inside the router hierarchy; keep route paths and definitions unchanged (`/` and `/studio`). If any nested/duplicate provider is found during audit, remove it so only the `frontend/src/main.tsx` top-level `AuthProvider` remains. Use the selected `authorization` component guidance to ensure all `useAuth()` consumers are descendants; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Audit the home route component tree (including `CreatorZoneTab`) to ensure it does not introduce its own `AuthProvider` wrapper and relies solely on the single top-level provider from `frontend/src/main.tsx`. Make any necessary adjustments to remove duplicate/nested providers (if present) without changing user-facing text or route behavior. Use the selected `authorization` component guidance; verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-63",
-      "summary": "Apply the redirect UX fixes without changing routing structure, guards, root layout, Header, router setup, or compiled outputs.",
+      "id": "REQ-74",
+      "summary": "Document redeploy + deployed-environment verification steps for the provider-order fix.",
       "acceptanceCriteria": [
-        "Only the scoped redirect logic is changed; no new routes are added (still only `/` and `/studio`).",
-        "No changes are made to routeTree route definitions/paths or router instantiation.",
-        "No compiled/bundled output files are edited."
+        "A new deployed version is produced after the provider-order change.",
+        "In the deployed version, the app no longer shows a blank screen and the console no longer logs `Uncaught Error: useAuth must be used within AuthProvider` originating from `CreatorZoneTab`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/contexts/AuthContext.tsx",
-          "operation": "modify",
-          "description": "Keep all changes scoped to AuthContext redirect behavior only (logout redirect + post-login admin redirect) and avoid touching routeTree, router instantiation, root layout, Header, Studio guards, or any compiled/bundled outputs; verify navigation targets remain limited to existing routes `/` and `/studio`."
+          "path": "frontend/DEPLOYMENT_VERIFICATION.md",
+          "operation": "create",
+          "description": "Add a short redeploy-and-verify checklist specific to this fix: rebuild/redeploy steps for the frontend, and a deployed-environment verification script (load → login → logout) including what to check in the console (absence of `useAuth must be used within AuthProvider`) and that the UI does not white-screen. Keep all text in English."
         }
       ]
     }

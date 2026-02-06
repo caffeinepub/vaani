@@ -1,56 +1,54 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T15:02:40.749Z",
+  "generatedAt": "2026-02-06T16:59:30.391Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 3,
+    "implemented": 1,
     "items": [
       {
-        "id": "REQ-61",
-        "summary": "Update the AuthContext logout redirect behavior so that after any logout (manual logout or idle auto-logout) the app clears session state and then performs a soft redirect to the Creator Zone root route using `navigate('/', { replace: true })` (route must be `/`, and `/creator-zone` must not be used).",
-        "status": "implemented",
+        "id": "REQ-72",
+        "summary": "Move `AuthProvider` to the absolute top of the React app tree so it unconditionally wraps `RouterProvider` and therefore all routes/components (including `CreatorZoneTab`), eliminating the runtime crash `Uncaught Error: useAuth must be used within AuthProvider` during login/logout transitions.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
+          "frontend/src/main.tsx"
         ],
-        "matchedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
-        ]
+        "matchedFiles": []
       },
       {
-        "id": "REQ-62",
-        "summary": "Implement role-based post-login navigation strictly in the login success path: after a successful Internet Identity login initiated by the app’s Login action, if the authenticated user is confirmed admin, perform `navigate('/studio', { replace: true })`; if the user is non-admin, perform no navigation (remain on the current page, which is `/`).",
-        "status": "implemented",
+        "id": "REQ-73",
+        "summary": "Audit and remove any duplicate/nested `AuthProvider` placements (if any exist) so there is exactly one `AuthProvider` instance wrapping the entire routed tree; ensure no route/layout/component can mount outside it.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
+          "frontend/src/routeTree.tsx",
+          "frontend/src/App.tsx"
         ],
-        "matchedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
-        ]
+        "matchedFiles": []
       },
       {
-        "id": "REQ-63",
-        "summary": "Keep routing and existing guards unchanged while applying these UX fixes: do not introduce any new routes, do not change the routing structure, and do not modify root layout, Header, router setup, Studio guards, or any compiled/built bundle files as part of this change.",
+        "id": "REQ-74",
+        "summary": "Redeploy a new version after applying the structural provider-order fix and verify the fix in the deployed environment (not just local dev).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
+          "frontend/DEPLOYMENT_VERIFICATION.md"
         ],
         "matchedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
+          "frontend/DEPLOYMENT_VERIFICATION.md"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/contexts/AuthContext.tsx",
+    "frontend/DEPLOYMENT_VERIFICATION.md",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

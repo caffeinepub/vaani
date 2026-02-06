@@ -1,29 +1,85 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T15:02:40.745Z",
-  "summary": "AuthContext.tsx implements soft redirects to `/` on both manual logout and idle auto-logout, and adds an app-initiated post-login admin-only redirect to `/studio`. No evidence in the provided diff summary of introducing `/creator-zone` or new routes. Two non-functional/documentation/state-tracking files were also modified, which were not explicitly requested by the BuildRequest.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-06T16:59:30.388Z",
+  "summary": "Diff adds a deployment verification checklist and appears to move AuthProvider to wrap RouterProvider in frontend/src/main.tsx while removing AuthProvider from the routeTree root layout. However, the diff also includes a backend/main.mo modification (explicitly disallowed) and many additional frontend behavior/UI changes not requested by the BuildRequest. Redeploy/verification in a deployed environment is not demonstrably completed by code changes alone.",
+  "missing_requirements": [
     {
-      "description": "Modified documentation/summary file content unrelated to the requested redirect logic changes.",
-      "reason": "BuildRequest scopes changes to redirect behavior and explicitly warns against broader changes; updating a file-summary artifact is not requested by any requirement.",
+      "id": "REQ-74",
+      "requirement": "Redeploy a new version after applying the structural provider-order fix and verify the fix in the deployed environment (not just local dev).",
+      "reason": "The diff adds a verification checklist document, but does not provide evidence that a new version was actually deployed and verified in a deployed environment (this is an operational outcome, not shown by the code diff).",
       "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Modified project state metadata/summary file.",
-      "reason": "BuildRequest does not request updating project metadata/state files; only redirect logic changes are required.",
-      "evidence": [
-        "project_state.json"
+        "frontend/DEPLOYMENT_VERIFICATION.md"
       ]
     }
   ],
-  "confidence": 0.74,
+  "hallucinated_features": [
+    {
+      "description": "Backend canister logic changes in backend/main.mo",
+      "reason": "BuildRequest explicitly states: \"Do not change backend code or backend behavior.\" Yet backend/main.mo is modified.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "React Query identity-scoped query key and refetch policy changes (staleTime: 0, refetchOnMount: 'always')",
+      "reason": "Not requested; scope is limited to provider placement to prevent useAuth crash.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/hooks/useQueries.ts)"
+      ]
+    },
+    {
+      "description": "Header behavior changes (admin Studio nav visibility gating, logout calling AuthContext without navigation, hook-usage restructuring)",
+      "reason": "Not requested; BuildRequest says to avoid refactoring unrelated UI/role logic.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/components/Header.tsx)"
+      ]
+    },
+    {
+      "description": "Studio page behavioral changes (removed auth redirect effect; navigation handled by AuthContext watcher)",
+      "reason": "Not requested; BuildRequest constraints include not changing route definitions/paths and limiting scope to provider structure so useAuth never runs outside AuthProvider.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/pages/Studio.tsx)"
+      ]
+    },
+    {
+      "description": "Automatic admin role assignment for a specific Principal ID in useActor",
+      "reason": "Not requested and risks changing auth/role behavior beyond provider placement.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/hooks/useActor.ts)"
+      ]
+    },
+    {
+      "description": "Introduction of hydration guard / hard-exit timeout contexts and full-screen loading components",
+      "reason": "Not requested; appears to add new app behavior unrelated to the provider placement fix.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/components/AuthHydrationGuard.tsx)",
+        "frontend-file-summaries.txt (frontend/src/contexts/HydrationHardExitContext.tsx)",
+        "frontend-file-summaries.txt (frontend/src/components/FullScreenLoading.tsx)"
+      ]
+    },
+    {
+      "description": "Creator Zone tab new behaviors (CreatorZoneAuthControls, inactivity auto-logout inline alert)",
+      "reason": "Not requested; adds new user-facing behavior beyond fixing provider placement.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/components/CreatorZoneTab.tsx)"
+      ]
+    },
+    {
+      "description": "Substantial UI/theme changes (global OKLCH purple theme, Tailwind config changes, footer attribution changes)",
+      "reason": "Not requested; outside the narrowly-scoped provider placement fix.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/index.css)",
+        "frontend-file-summaries.txt (frontend/tailwind.config.js)",
+        "frontend-file-summaries.txt (frontend/src/components/Footer.tsx)"
+      ]
+    }
+  ],
+  "confidence": 0.64,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/contexts/AuthContext.tsx",
+    "frontend/DEPLOYMENT_VERIFICATION.md",
     "project_state.json"
   ]
 }

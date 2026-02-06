@@ -174,6 +174,9 @@ actor {
   };
 
   public query ({ caller }) func checkIsArtist() : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check artist status");
+    };
     switch (profiles.get(caller)) {
       case (?profile) { profile.role == #admin or profile.subscription };
       case (null) { false };
@@ -184,4 +187,3 @@ actor {
     caller.toText();
   };
 };
-

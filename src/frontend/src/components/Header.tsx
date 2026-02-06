@@ -13,16 +13,18 @@ import {
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Header() {
   // Call ALL hooks unconditionally at the top level (required by React rules)
-  const { identity, clear, isLoggingIn } = useInternetIdentity();
+  const { identity, isLoggingIn } = useInternetIdentity();
   const queryClient = useQueryClient();
   const { data: userProfile, isLoading: profileLoading, isFetched: profileFetched } = useGetCallerUserProfile();
   const navigate = useNavigate();
   const routerState = useRouterState();
   const previousIdentityRef = useRef<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const { logout } = useAuth();
 
   const isAuthenticated = !!identity;
   const currentPrincipalId = identity?.getPrincipal().toString();
@@ -65,11 +67,10 @@ export default function Header() {
     previousIdentityRef.current = currentPrincipalId || null;
   }, [currentPrincipalId, queryClient]);
 
-  const handleLogout = async () => {
-    await clear();
-    queryClient.clear();
+  const handleLogout = () => {
+    // Only trigger logout action - AuthContext watcher handles navigation
+    logout();
     previousIdentityRef.current = null;
-    navigate({ to: '/' });
   };
 
   const handleNavigate = (path: string) => {
