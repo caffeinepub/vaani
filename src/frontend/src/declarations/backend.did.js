@@ -61,6 +61,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'submitAudioForApproval' : IDL.Func([AudioSubmissionInput], [], []),
+  'whoAmI' : IDL.Func([], [IDL.Text], ['query']),
 });
 
 export const idlInitArgs = [];
@@ -119,6 +120,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'submitAudioForApproval' : IDL.Func([AudioSubmissionInput], [], []),
+    'whoAmI' : IDL.Func([], [IDL.Text], ['query']),
   });
 };
 

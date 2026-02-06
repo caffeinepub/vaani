@@ -52,4 +52,5 @@ export interface backendInterface {
     saveCallerUserProfile(displayName: string, subscription: boolean): Promise<void>;
     searchArtists(search: string): Promise<Array<[Principal, Profile]>>;
     submitAudioForApproval(input: AudioSubmissionInput): Promise<void>;
+    whoAmI(): Promise<string>;
 }

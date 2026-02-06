@@ -1,14 +1,346 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "VAANI: voice-first creator/listener platform MVP focused on a clean Motoko backend foundation (profiles, auth via caller Principal, admin roles) plus an admin-first audio metadata submission/approval workflow (metadata only; no audio files). Recording, playback, subscriptions/payments, and creator earnings are explicitly deferred.",
+  "projectStateVersion": 43,
+  "summary": "VAANI: voice-first creator/listener platform MVP focused on a clean Motoko backend foundation (profiles, auth via caller Principal, admin roles) plus an admin-first audio metadata submission/approval workflow (metadata only; no audio files). Root UI is being reset/simplified back to the stable v1–v8 behavior: remove SafeRoot/AppShell and all root-level hydration/guard/loader/timeout logic; root must synchronously render Creator Zone as the default UI on first paint. Current critical blank-screen cause has been identified as a Router context crash: Header renders before the Router provider but uses router hooks, causing React to crash before mount; fix requires moving Header inside the Router tree with no other behavior changes. Admin/Studio behavior (including /studio guard and Principal ID display rules) must be implemented only in child components and must not affect root rendering. Recording, playback, subscriptions/payments, and creator earnings remain explicitly deferred.",
   "architectural_notes": [
     "Implement as a mobile-first web app backend; defer recording, subscription billing/checkout sync, and earnings features for now.",
-    "Admin-first moderation workflow: creator submissions enter a pending queue; only admin-approved metadata is visible via public read APIs; no audio file storage/processing in this phase."
+    "Admin-first moderation workflow: creator submissions enter a pending queue; only admin-approved metadata is visible via public read APIs; no audio file storage/processing in this phase.",
+    "Add VAANI Studio Admin Panel UI under /studio; route must be accessible/visible only to admin users (non-admins cannot access or see it).",
+    "Add a minimal 'whoami/getCaller' read-only endpoint (and minimal UI surface) to display the authenticated caller Principal ID for admin setup/debugging; avoid any other UI/routing/feature changes.",
+    "Set initial admin Principal for this project to: p2vep-zzrn7-7ra2w-dbv1z-yeqlj-tyskb-pjhpt-dx3u3-dkhuu-ivsbx-uae (admin=true).",
+    "UI visibility/access control rule: Studio navigation/tab and Studio UI must be admin-only; non-admin users must not see Studio tab and must not be able to view Studio content at /studio (UI-level guard only; no auth/roles/routing/backend changes).",
+    "Principal ID UI rule: never display caller Principal ID to non-admin users; display Principal ID only inside the Studio (admin panel) for admins.",
+    "Root reset/simplification: remove SafeRoot/AppShell and all root-level hydration gates, fallback chains, loaders, and timeouts; root must synchronously render Creator Zone as the default UI on first paint with zero async logic in the root render path.",
+    "Admin/Studio logic must be a child-level enhancement only: /studio access guard, Studio tab visibility, admin checks, and Principal ID display must not affect or block root rendering; root must be unaware of admin vs non-admin.",
+    "Post-login redirects, role-based gating, and any rehydration/session checks must not occur at the root level; if needed, re-apply only within child components later."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "existing_features": [],
+  "known_issues": [
+    "UI bug/regression: Studio tab and/or Principal ID visibility is not correctly restricted by admin vs non-admin; requires UI-only fix (no backend/auth/routing changes).",
+    "Post-deployment regression: UI may use stale cached session/role state after login, causing incorrect admin vs non-admin Studio tab visibility and /studio access; requires UI/session rehydration fix (no backend/auth/routing changes).",
+    "Blank screen regression: UI can render before Internet Identity authentication state is fully resolved (e.g., after refresh or prompt-based changes); requires UI-only global auth-resolution/hydration guard (no backend/auth/routing changes).",
+    "Critical blank-screen regression on refresh: root/layout can return null/empty fragment during transient undefined auth/identity state, causing full DOM unmount and permanent blank screen; requires root-level stable loading/landing rendering (frontend-only).",
+    "Critical regression: app can get stuck indefinitely on full-screen \"Loading VAANI...\" (hydration/auth/role resolution never completes), requiring a UI-only hard-exit fallback to prevent infinite loading.",
+    "Critical regression: current deployed version can show a pure white/blank screen due to root overcomplexity/safety-layer stacking; requires root simplification reset back to synchronous v1–v8 render behavior (no SafeRoot/AppShell/guards/loaders/timeouts at root).",
+    "Critical blank-screen cause: Router context crash — Header renders outside/ לפני Router provider while using router hooks, causing 'Cannot read properties of null (reading \\\"store\\\")' and React to crash before mount.",
+    "Version 18 still crashes with TanStack Router context error: \"Cannot read properties of null (reading '_store')\" in compiled bundle (index-Drqlw32l.js), indicating Header/router-hook usage still runs before Router provider is mounted.",
+    "Crash proof confirmed: blank/white screen persists with console error `Cannot read properties of null (reading '__store')`, caused by `Header` calling TanStack Router hooks before `RouterProvider` exists (provider-order issue).",
+    "Crash evidence from browser points into compiled TanStack Router bundle at `return useStore(router.__store, (state) => {})`, consistent with Header calling router hooks before RouterProvider is mounted."
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-add-a-minimal-frontend-display-that-shows-the-currently-authenticated-user-s-principal-id-as-returned-by-the-new-backend-method-and-nothing-else-keep-all-existing-navigation-routing-behavior-unchanged",
+      "title": "Add a minimal frontend display that shows the currently authenticated user’s Principal ID (as returned by the new backend method) and nothing else; keep all existing navigation/routing behavior unchanged.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-main-authenticated-dashboard-ui-so-that-non-admin-users-creator-public-do-not-see-any-studio-ui-and-do-not-see-the-principal-id-anywhere-in-the-dashboard-ui",
+      "title": "Update the main authenticated dashboard UI so that non-admin users (creator/public) do not see any Studio UI and do not see the Principal ID anywhere in the dashboard UI.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-main-authenticated-dashboard-ui-so-that-the-studio-tab-is-visible-only-for-admins-and-keep-creator-zone-available-for-admins-allowed",
+      "title": "Update the main authenticated dashboard UI so that the Studio tab is visible only for admins, and keep Creator Zone available for admins (allowed).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-authenticated-user-s-principal-id-is-displayed-only-inside-the-studio-admin-panel-studio-and-only-for-admins-remove-avoid-principal-id-display-in-all-other-ui-locations",
+      "title": "Ensure the authenticated user’s Principal ID is displayed ONLY inside the Studio admin panel (/studio) and ONLY for admins; remove/avoid Principal ID display in all other UI locations.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-ui-level-access-guard-on-the-studio-page-so-that-non-admin-authenticated-users-are-redirected-away-from-studio-to-and-cannot-view-studio-page-content-do-not-change-route-definitions-or-backend-logic",
+      "title": "Implement a UI-level access guard on the /studio page so that non-admin authenticated users are redirected away from /studio to / and cannot view Studio page content; do not change route definitions or backend logic.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-every-transition-from-logged-out-to-logged-in-within-the-spa-internet-identity-identity-becomes-available-force-a-fresh-backend-re-evaluation-of-the-caller-s-admin-status-and-profile-by-clearing-any-cached-role-profile-admin-queries-and-triggering-a-refetch",
+      "title": "On every transition from logged-out to logged-in within the SPA (Internet Identity identity becomes available), force a fresh backend re-evaluation of the caller’s admin status and profile by clearing any cached role/profile/admin queries and triggering a refetch.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-react-query-caching-for-user-role-admin-profile-queries-so-role-driven-ui-never-renders-from-stale-cached-data-ensure-the-relevant-query-keys-are-identity-scoped-include-the-authenticated-principal-string-and-configure-the-queries-to-refetch-on-mount-after-login-rather-than-relying-on-cache",
+      "title": "Update React Query caching for user role/admin/profile queries so role-driven UI never renders from stale cached data: ensure the relevant query keys are identity-scoped (include the authenticated Principal string) and configure the queries to refetch on mount after login rather than relying on cache.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-studio-navigation-visibility-and-the-studio-ui-access-guard-behave-correctly-during-post-login-rehydration-while-the-fresh-role-profile-fetch-is-in-flight-after-login-do-not-show-admin-only-studio-navigation-and-do-not-render-studio-page-content-until-admin-status-is-confirmed-once-confirmed-apply-the-existing-rules-admins-see-access-studio-non-admins-do-not-and-are-redirected-away",
+      "title": "Ensure Studio navigation visibility and the /studio UI access guard behave correctly during post-login rehydration: while the fresh role/profile fetch is in-flight after login, do not show admin-only Studio navigation and do not render Studio page content until admin status is confirmed; once confirmed, apply the existing rules (admins see/access Studio; non-admins do not and are redirected away).",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-global-ui-level-authentication-resolution-hydration-guard-that-blocks-rendering-of-the-app-s-routed-page-content-until-internet-identity-initialization-is-complete-and-when-authenticated-the-caller-s-profile-role-state-has-been-fetched-at-least-once",
+      "title": "Add a global UI-level authentication resolution (hydration) guard that blocks rendering of the app’s routed page content until Internet Identity initialization is complete and (when authenticated) the caller’s profile/role state has been fetched at least once.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-a-simple-global-loading-state-while-authentication-rehydration-is-resolving-e-g-spinner-english-text-and-ensure-this-loading-state-replaces-the-normal-app-content-to-avoid-flicker-partial-rendering",
+      "title": "Display a simple global loading state while authentication/rehydration is resolving (e.g., spinner + English text), and ensure this loading state replaces the normal app content to avoid flicker/partial rendering.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-once-authentication-is-resolved-ensure-role-driven-ui-renders-correctly-admins-can-see-the-studio-tab-navigation-non-admin-users-see-creator-zone-only-no-studio-ui",
+      "title": "Once authentication is resolved, ensure role-driven UI renders correctly: admins can see the Studio tab/navigation; non-admin users see Creator Zone only (no Studio UI).",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-root-home-route-component-frontend-src-app-tsx-so-it-never-returns-null-or-an-empty-fragment-during-any-transient-authentication-profile-state-instead-always-render-one-of-a-the-existing-landing-welcome-screen-when-unauthenticated-b-a-stable-loading-ui-while-authenticated-state-is-resolving-e-g-identity-present-but-profile-query-not-fetched-yet-in-flight-c-the-existing-profile-setup-screen-when-authenticated-and-the-profile-is-confirmed-missing-or-d-the-existing-dashboard-when-the-profile-exists",
+      "title": "Update the root home route component (`frontend/src/App.tsx`) so it NEVER returns `null` or an empty fragment during any transient authentication/profile state; instead, always render one of: (a) the existing landing/welcome screen when unauthenticated, (b) a stable loading UI while authenticated state is resolving (e.g., identity present but profile query not fetched yet / in-flight), (c) the existing Profile Setup screen when authenticated and the profile is confirmed missing, or (d) the existing Dashboard when the profile exists.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-adjust-a-full-screen-loading-ui-for-the-app-home-route-transient-state-spinner-english-text-using-existing-styling-conventions-tailwind-existing-icon-loader-ensuring-the-root-route-always-renders-something-visible-while-auth-profile-resolution-is-happening",
+      "title": "Add/adjust a full-screen loading UI for the App (home route) transient state (spinner + English text), using existing styling conventions (Tailwind + existing icon loader), ensuring the root route always renders something visible while auth/profile resolution is happening.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-studio-page-frontend-src-pages-studio-tsx-to-avoid-returning-null-for-non-admin-authenticated-users-while-the-redirect-away-is-pending-or-while-admin-status-is-not-yet-confirmed-render-a-stable-non-blank-ui-e-g-a-loading-redirecting-view-so-the-page-never-goes-blank-due-to-a-return-null-path",
+      "title": "Update the admin Studio page (`frontend/src/pages/Studio.tsx`) to avoid returning `null` for non-admin authenticated users; while the redirect-away is pending (or while admin status is not yet confirmed), render a stable non-blank UI (e.g., a loading/redirecting view) so the page never goes blank due to a `return null` path.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-ui-level-hard-exit-for-the-global-hydration-loading-gate-so-the-app-can-never-remain-stuck-on-the-full-screen-loading-vaani-state-indefinitely-after-a-timeout-allow-routed-content-to-render-even-if-profile-role-queries-have-not-resolved",
+      "title": "Add a UI-level HARD EXIT for the global hydration/loading gate so the app can never remain stuck on the full-screen \"Loading VAANI...\" state indefinitely; after a timeout, allow routed content to render even if profile/role queries have not resolved.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-home-route-component-frontend-src-app-tsx-so-that-no-screen-depends-on-async-role-profile-resolution-to-render-if-the-user-is-authenticated-but-the-profile-query-is-still-unresolved-after-the-hard-exit-timeout-render-a-creator-zone-default-ui-fallback-instead-of-continuing-to-show-a-loader",
+      "title": "Update the home route component (frontend/src/App.tsx) so that no screen depends on async role/profile resolution to render: if the user is authenticated but the profile query is still unresolved after the hard-exit timeout, render a Creator Zone default UI fallback instead of continuing to show a loader.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-studio-tab-visibility-is-evaluated-only-after-the-ui-is-mounted-do-not-render-any-admin-only-studio-navigation-during-initial-mount-hydration-and-only-show-it-once-the-app-is-mounted-and-admin-status-is-confirmed-if-admin-status-is-unknown-unresolved-default-to-hiding-studio-navigation",
+      "title": "Ensure Studio tab visibility is evaluated only after the UI is mounted: do not render any admin-only Studio navigation during initial mount/hydration, and only show it once the app is mounted AND admin status is confirmed; if admin status is unknown/unresolved, default to hiding Studio navigation.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-stable-non-blank-ui-state-for-the-post-timeout-fallback-path-global-guard-and-home-route-show-a-clear-warning-notice-that-the-app-could-not-resolve-profile-role-but-continue-rendering-the-creator-zone-ui-do-not-block-rendering-behind-any-additional-async-checks",
+      "title": "Add a stable, non-blank UI state for the post-timeout fallback path (global guard and home route): show a clear warning/notice that the app could not resolve profile/role, but continue rendering the Creator Zone UI; do not block rendering behind any additional async checks.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-global-hydration-auth-gating-so-the-app-s-routed-page-content-always-renders-a-visible-screen-immediately-on-first-paint-without-waiting-for-internet-identity-initialization-profile-fetch-or-admin-role-resolution",
+      "title": "Update the global hydration/auth gating so the app’s routed page content always renders a visible screen immediately on first paint, without waiting for Internet Identity initialization, profile fetch, or admin role resolution.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-default-immediately-visible-screen-the-creator-zone-dashboard-ui-the-existing-creator-zone-content-and-ensure-it-is-rendered-as-the-safe-fallback-while-authentication-profile-admin-state-is-unresolved",
+      "title": "Make the default immediately-visible screen the Creator Zone dashboard UI (the existing Creator Zone content), and ensure it is rendered as the safe fallback while authentication/profile/admin state is unresolved.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-any-loading-state-used-during-authentication-profile-admin-resolution-cannot-become-infinite-add-keep-a-fixed-hard-timeout-and-after-the-timeout-the-ui-must-continue-rendering-the-creator-zone-fallback-without-blocking-or-unmounting-routed-content",
+      "title": "Ensure any loading state used during authentication/profile/admin resolution cannot become infinite: add/keep a fixed hard timeout, and after the timeout the UI must continue rendering the Creator Zone fallback without blocking or unmounting routed content.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-move-all-admin-checks-and-admin-driven-ui-decisions-to-occur-after-the-first-ui-mount-admin-checks-must-never-block-the-initial-ui-mount-or-cause-a-transient-null-empty-render-path",
+      "title": "Move all admin checks and admin-driven UI decisions to occur after the first UI mount; admin checks must never block the initial UI mount or cause a transient null/empty render path.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-respect-the-strict-constraints-for-this-fix-do-not-change-authentication-behavior-do-not-change-role-logic-do-not-change-routing-definitions-do-not-add-login-logout-flows-do-not-touch-the-backend-and-do-not-refactor-unrelated-features-limit-changes-strictly-to-render-unblock-and-fallback-safety",
+      "title": "Respect the strict constraints for this fix: do not change authentication behavior, do not change role logic, do not change routing definitions, do not add login/logout flows, do not touch the backend, and do not refactor unrelated features—limit changes strictly to render-unblock and fallback safety.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-root-shell-layer-saferoot-appshell-that-guarantees-the-application-renders-a-visible-ui-immediately-on-first-paint-and-never-returns-null-undefined-or-an-empty-fragment-from-any-root-layout-path",
+      "title": "Create a new root shell layer (SafeRoot + AppShell) that guarantees the application renders a visible UI immediately on first paint and never returns `null`, `undefined`, or an empty fragment from any root/layout path.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-root-route-layout-frontend-src-routetree-tsx-to-use-saferoot-appshell-as-the-top-level-ui-shell-while-preserving-existing-route-definitions-paths-and-studio-and-keeping-routed-content-rendered-via-outlet",
+      "title": "Update the root route layout (`frontend/src/routeTree.tsx`) to use SafeRoot/AppShell as the top-level UI shell while preserving existing route definitions/paths (`/` and `/studio`) and keeping routed content rendered via `<Outlet />`.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-all-authentication-session-profile-admin-role-checks-run-after-the-initial-ui-render-and-never-block-the-first-paint-while-unresolved-render-creator-zone-as-the-default-safe-fallback-and-only-enhance-to-admin-studio-ui-after-confirmation",
+      "title": "Ensure all authentication/session/profile/admin role checks run after the initial UI render and never block the first paint; while unresolved, render Creator Zone as the default safe fallback, and only enhance to admin/Studio UI after confirmation.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-keep-hard-exit-protections-so-no-loading-hydration-state-can-become-infinite-after-the-timeout-the-app-must-continue-rendering-the-creator-zone-fallback-and-must-not-block-or-unmount-routed-content-behind-any-additional-async-checks",
+      "title": "Add/keep hard-exit protections so no loading/hydration state can become infinite; after the timeout, the app must continue rendering the Creator Zone fallback and must not block or unmount routed content behind any additional async checks.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-preserve-all-strict-constraints-during-the-root-shell-rebuild-do-not-add-new-product-features-do-not-add-login-logout-flows-do-not-change-authentication-behavior-do-not-change-backend-data-or-roles-do-not-change-role-logic-and-do-not-change-route-definitions",
+      "title": "Preserve all strict constraints during the root shell rebuild: do not add new product features, do not add login/logout flows, do not change authentication behavior, do not change backend data or roles, do not change role logic, and do not change route definitions.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-home-route-component-frontend-src-app-tsx-so-it-has-a-single-unconditional-return-and-never-uses-conditional-early-returns-while-still-always-rendering-visible-ui-for-every-state-unauthenticated-authenticated-profile-authenticated-no-profile-any-unresolved-hydrating-state",
+      "title": "Update the home route component (`frontend/src/App.tsx`) so it has a single, unconditional return and never uses conditional early returns, while still always rendering visible UI for every state (unauthenticated, authenticated+profile, authenticated+no profile, any unresolved/hydrating state).",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-hard-bound-any-loading-rehydration-ui-so-it-cannot-become-infinite-verify-the-hydration-hard-exit-timeout-remains-in-effect-and-that-after-the-timeout-the-app-continues-rendering-the-creator-zone-fallback-ui-non-admin-view-without-blocking-or-unmounting-routed-content",
+      "title": "Hard-bound any loading/rehydration UI so it cannot become infinite: verify the hydration hard-exit timeout remains in effect and that after the timeout the app continues rendering the Creator Zone fallback UI (non-admin view) without blocking or unmounting routed content.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-confirm-studio-ui-only-access-and-principal-id-display-rules-remain-enforced-under-the-new-root-shell-behavior-studio-navigation-is-shown-only-for-confirmed-admins-after-mount-confirmed-admin-non-admins-are-redirected-away-from-studio-and-principal-id-is-displayed-only-inside-the-studio-admin-view",
+      "title": "Confirm Studio UI-only access and Principal ID display rules remain enforced under the new root shell behavior: Studio navigation is shown only for confirmed admins (after mount + confirmed admin), non-admins are redirected away from `/studio`, and Principal ID is displayed only inside the Studio admin view.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-previously-built-safety-layers-from-the-root-layout-so-the-root-route-renders-without-saferoot-appshell-hydration-gates-fallback-chains-timeouts-root-level-loaders-or-root-level-guards",
+      "title": "Remove all previously built safety layers from the ROOT layout so the root route renders without SafeRoot, AppShell, hydration gates, fallback chains, timeouts, root-level loaders, or root-level guards.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restore-the-home-root-render-flow-to-the-v1-v8-style-simplicity-update-frontend-src-app-tsx-so-it-synchronously-renders-the-creator-zone-ui-by-default-with-no-redirects-no-role-logic-no-timeout-logic-and-no-fallback-chain-switching-between-multiple-screens",
+      "title": "Restore the home/root render flow to the v1–v8-style simplicity: update `frontend/src/App.tsx` so it synchronously renders the Creator Zone UI by default with no redirects, no role logic, no timeout logic, and no fallback chain switching between multiple screens.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-keep-the-studio-admin-guard-and-principal-id-display-rules-enforced-only-within-the-studio-page-child-level-ensuring-studio-admin-logic-does-not-affect-root-rendering",
+      "title": "Keep the `/studio` admin guard and Principal ID display rules enforced ONLY within the Studio page (child level), ensuring Studio/admin logic does not affect root rendering.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-or-disconnect-root-only-hydration-timeout-ui-artifacts-that-are-no-longer-part-of-the-app-s-root-render-path-after-the-reset-ensuring-they-are-not-referenced-by-the-root-layout-or-home-route",
+      "title": "Remove or disconnect root-only hydration/timeout UI artifacts that are no longer part of the app’s root render path after the reset, ensuring they are not referenced by the root layout or home route.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-router-context-crash-causing-a-blank-screen-by-ensuring-the-tanstack-router-provider-is-mounted-before-any-component-that-calls-router-hooks-e-g-userouterstate-usenavigate-uselocation-specifically-header-must-only-render-within-the-router-provider-tree",
+      "title": "Fix the Router context crash causing a blank screen by ensuring the TanStack Router provider is mounted before any component that calls router hooks (e.g., `useRouterState`, `useNavigate`, `useLocation`)—specifically, `Header` must only render within the Router provider tree.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-application-entry-mounting-so-it-renders-the-routed-app-through-tanstack-router-using-the-existing-routetree-with-and-studio-paths-instead-of-rendering-app-directly-outside-router-context",
+      "title": "Update the application entry mounting so it renders the routed app through TanStack Router (using the existing `routeTree` with `/` and `/studio` paths) instead of rendering `App` directly outside router context.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-patch-the-root-layout-level-header-component-defined-in-frontend-src-components-header-tsx-the-one-importing-and-calling-userouterstate-usenavigate-to-safely-guard-all-tanstack-router-hook-usage-so-that-if-router-context-is-not-available-yet-header-returns-null-instead-of-throwing-and-crashing-the-app-the-guard-must-be-applied-at-the-very-top-of-the-router-hook-usage-inside-header-i-e-immediately-around-before-the-current-usenavigate-and-userouterstate-calls-at-lines-21-22-and-must-prevent-the-runtime-error-that-causes-a-blank-white-screen-when-header-renders-before-the-router-provider-is-mounted-do-not-change-routing-structure-authentication-roles-backend-or-any-other-components-this-is-a-targeted-crash-prevention-patch-only",
+      "title": "Patch the root/layout-level `Header` component defined in `frontend/src/components/Header.tsx` (the one importing and calling `useRouterState`/`useNavigate`) to safely guard all TanStack Router hook usage so that if Router context is not available yet, `Header` returns `null` instead of throwing and crashing the app.\n\nThe guard must be applied at the very top of the router-hook usage inside `Header` (i.e., immediately around/before the current `useNavigate()` and `useRouterState()` calls at lines 21–22), and must prevent the runtime error that causes a blank/white screen when `Header` renders before the Router provider is mounted.\n\nDo not change routing structure, authentication, roles, backend, or any other components—this is a targeted crash-prevention patch only.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-application-mounting-so-the-routed-app-is-rendered-through-tanstack-router-using-the-existing-routetree-with-and-studio-ensuring-the-routerprovider-is-mounted-before-any-component-that-calls-tanstack-router-hooks-including-header-can-render",
+      "title": "Update the application mounting so the routed app is rendered through TanStack Router using the existing `routeTree` (with `/` and `/studio`), ensuring the RouterProvider is mounted before any component that calls TanStack Router hooks (including `Header`) can render.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    }
+  ],
   "new_feature_requests": [
     {
       "id": "AR-1",
@@ -125,6 +457,110 @@
       "summary": "Enforce access rules for the audio metadata workflow in `backend/main.mo`: only admins can approve/reject; public users can read only approved audio metadata; and the submitter cannot self-approve their own submission (even if they otherwise have permissions).",
       "reqIds": [
         "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Add VAANI Studio Admin Panel UI at route /studio (admin-only): list pending submissions, approve/reject, and set approved audio as premium or free; Creator Zone and auth/roles unchanged",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Fix post-authentication redirect routing to prevent blank screen: after Internet Identity login redirect admins to /studio and non-admin users to / (home/landing dashboard), without changing existing UI/Creator Zone/Studio logic",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add a minimal \"whoami/getCaller\" capability to display the currently authenticated Internet Identity caller Principal ID (backend method + minimal frontend display; no other behavior changes)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Add a minimal backend query method that returns the current canister caller’s Principal ID as text (whoami/getCaller behavior), without changing any existing profile, admin, audio, or routing logic.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "UI-only visibility/access control fix: Studio tab and /studio view admin-only; Creator Zone only for non-admin; Principal ID shown only inside Studio for admins and never to non-admins",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-23",
+      "summary": "UI session-state rehydration fix: on every fresh login re-fetch admin status from backend (no cached role) to control Studio tab visibility and /studio access guard; no auth/role/backend/routing/feature changes",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Root simplification reset: remove SafeRoot/AppShell and all root-level guards/loaders/timeouts; restore v1–v8-style synchronous root render that always shows Creator Zone by default; keep /studio admin guard only at child level; root must be unaware of admin vs non-admin",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Fix blank screen Router context crash: ensure Router provider mounts before Header by moving Header inside the Router tree (no auth/roles/backend/routing logic changes; no new guards/loaders/SafeRoot changes)",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Update the frontend app entry mounting so the TanStack Router provider is mounted before any routed components render (including `Header`), eliminating the crash `Cannot read properties of null (reading '_store')` from `useRouterState`/`useNavigate`. Render the application through TanStack Router using the existing `routeTree` that defines `/` and `/studio` routes.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Keep existing route definitions and paths unchanged (`/` and `/studio`) and keep existing authentication/role logic unchanged; implement only the mounting/provider-order fix needed to resolve the router context crash.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Targeted crash-prevention patch in Header: safely guard TanStack router hook usage (useRouterState/useLocation/useNavigate) and return null if Router context is unavailable to prevent blank/white screen; do not change routing/auth/roles/backend/other components",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Update the frontend entry mounting so the TanStack Router provider is mounted before any routed components render (including `Header`), eliminating the runtime crash `Cannot read properties of null (reading '_store')` shown in the compiled bundle (`index-DRQIw32l.js`).",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Preserve the existing route definitions and paths (`/` and `/studio`) and keep all authentication/admin/role logic unchanged while applying the router provider mounting fix.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Fix the blank/white screen crash caused by TanStack Router context being unavailable when `frontend/src/components/Header.tsx` renders: ensure `Header` does not call `useRouterState()` and `useNavigate()` unless Router context exists, OR ensure `Header` only renders strictly inside the `RouterProvider` tree (source-level fix only; do not edit any compiled bundle files).",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Redeploy after applying the router-provider order fix and verify the initial load no longer results in a blank/white screen.",
+      "reqIds": [
+        "REQ-55"
       ],
       "status": "pending"
     }

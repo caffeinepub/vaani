@@ -9,11 +9,9 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
 actor {
-  // Initialize the access control state
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // User Profile type
   public type Profile = {
     displayName : Text;
     role : AccessControl.UserRole;
@@ -29,20 +27,17 @@ actor {
     };
   };
 
-  // Simulate persistent (stable) state for profiles using Map data structure
   let profiles = Map.empty<Principal, Profile>();
 
-  // Audio Metadata type
   public type AudioMetadata = {
     id : Text;
     ownerPrincipal : Principal;
     uploadedFrom : { #Studio; #CreatorZone };
-    duration : Nat; // Duration in milliseconds
+    duration : Nat;
     isApproved : Bool;
     isPremium : Bool;
   };
 
-  // Audio submission input type (without ownerPrincipal to prevent spoofing)
   public type AudioSubmissionInput = {
     id : Text;
     uploadedFrom : { #Studio; #CreatorZone };
@@ -51,8 +46,6 @@ actor {
   };
 
   let audios = Map.empty<Text, AudioMetadata>();
-
-  // -- Profile Management (Required by frontend) -- //
 
   public query ({ caller }) func getCallerUserProfile() : async ?Profile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -82,8 +75,6 @@ actor {
     profiles.add(caller, profile);
   };
 
-  // -- Additional Profile Queries -- //
-
   public query ({ caller }) func getProfileByPrincipal(principal : Principal) : async Profile {
     if (caller != principal and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
@@ -96,7 +87,6 @@ actor {
   };
 
   public query ({ caller }) func getAllArtistProfiles() : async [Profile] {
-    // Public read access - no authorization needed
     let allProfiles = profiles.values().toArray();
     let artistProfiles = allProfiles.filter(func(p) {
       p.role == #admin or p.subscription;
@@ -105,21 +95,17 @@ actor {
   };
 
   public query ({ caller }) func searchArtists(search : Text) : async [(Principal, Profile)] {
-    // Public read access - no authorization needed
     let allEntries = profiles.entries().toArray();
     allEntries.filter<(Principal, Profile)>(func((_, p)) {
       (p.role == #admin or p.subscription) and p.displayName.contains(#text search);
     });
   };
 
-  // -- Creator Zone Submission Flow -- //
-
   public shared ({ caller }) func submitAudioForApproval(input : AudioSubmissionInput) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can submit audio");
     };
 
-    // Security: Set ownerPrincipal to caller to prevent principal spoofing
     let metadata : AudioMetadata = {
       id = input.id;
       ownerPrincipal = caller;
@@ -131,8 +117,6 @@ actor {
 
     audios.add(input.id, metadata);
   };
-
-  // -- VAANI Studio Admin Operations -- //
 
   public query ({ caller }) func getPendingSubmissions() : async [AudioMetadata] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
@@ -172,8 +156,6 @@ actor {
     };
   };
 
-  // -- Public Audio Queries -- //
-
   public query ({ caller }) func getApprovedAudio(audioId : Text) : async AudioMetadata {
     switch (audios.get(audioId)) {
       case (null) { Runtime.trap("Audio " # audioId # " does not exist") };
@@ -191,12 +173,15 @@ actor {
     allAudios.filter(func(a) { a.isApproved });
   };
 
-  // -- Access Control Queries -- //
-
   public query ({ caller }) func checkIsArtist() : async Bool {
     switch (profiles.get(caller)) {
       case (?profile) { profile.role == #admin or profile.subscription };
       case (null) { false };
     };
   };
+
+  public query ({ caller }) func whoAmI() : async Text {
+    caller.toText();
+  };
 };
+

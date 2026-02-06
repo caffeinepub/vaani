@@ -1,61 +1,58 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T08:00:11.013Z",
+  "generatedAt": "2026-02-06T14:05:56.864Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 0,
+    "total": 3,
+    "implemented": 1,
     "items": [
       {
-        "id": "REQ-5",
-        "summary": "Extend `backend/main.mo` with an Audio Metadata data model (metadata only; no audio file data) containing exactly these fields: `id`, `ownerPrincipal`, `uploadedFrom` (variant: `#Studio` | `#CreatorZone`), `duration`, `isApproved`, `isPremium`.",
-        "status": "unknown",
-        "plannedFiles": [],
+        "id": "REQ-53",
+        "summary": "Fix the blank/white screen crash caused by TanStack Router context being unavailable when `frontend/src/components/Header.tsx` renders: ensure `Header` does not call `useRouterState()` and `useNavigate()` unless Router context exists, OR ensure `Header` only renders strictly inside the `RouterProvider` tree (source-level fix only; do not edit any compiled bundle files).",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/src/components/Header.tsx"
+        ],
         "matchedFiles": []
       },
       {
-        "id": "REQ-6",
-        "summary": "Implement a Creator Zone submission flow in `backend/main.mo` where an authenticated caller can submit audio metadata into a pending queue, and pending submissions are not publicly visible by default.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "id": "REQ-54",
+        "summary": "Update the application mounting so the routed app is rendered through TanStack Router using the existing `routeTree` (with `/` and `/studio`), ensuring the RouterProvider is mounted before any component that calls TanStack Router hooks (including `Header`) can render.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/main.tsx",
+          "frontend/src/router.ts",
+          "frontend/src/routeTree.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/routeTree.tsx"
+        ]
       },
       {
-        "id": "REQ-7",
-        "summary": "Implement VAANI Studio (admin panel) backend operations in `backend/main.mo` so an admin can: (1) list all pending submissions, and (2) approve or reject a pending submission by id. Only approved audio metadata becomes visible to non-admin users.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Enforce access rules for the audio metadata workflow in `backend/main.mo`: only admins can approve/reject; public users can read only approved audio metadata; and the submitter cannot self-approve their own submission (even if they otherwise have permissions).",
-        "status": "unknown",
-        "plannedFiles": [],
+        "id": "REQ-55",
+        "summary": "Redeploy after applying the router-provider order fix and verify the initial load no longer results in a blank/white screen.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/DEPLOYMENT.md"
+        ],
         "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
+    "frontend/src/App.tsx",
     "frontend/src/components/AdminPanel.tsx",
-    "frontend/src/components/CreatorZoneTab.tsx",
-    "frontend/src/components/Dashboard.tsx",
-    "frontend/src/components/StudioTab.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/components/FullScreenLoading.tsx",
+    "frontend/src/pages/Studio.tsx",
+    "frontend/src/routeTree.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

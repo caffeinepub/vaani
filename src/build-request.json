@@ -1,91 +1,73 @@
 {
   "kind": "build_request",
-  "title": "Add admin-first audio metadata submission and approval workflow (backend only)",
-  "priority": "normal",
+  "title": "Fix blank/white screen crash by ensuring Header uses TanStack Router hooks only when RouterProvider is mounted",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-5",
-      "text": "Extend `backend/main.mo` with an Audio Metadata data model (metadata only; no audio file data) containing exactly these fields: `id`, `ownerPrincipal`, `uploadedFrom` (variant: `#Studio` | `#CreatorZone`), `duration`, `isApproved`, `isPremium`.",
-      "target": "backend",
+      "id": "REQ-53",
+      "text": "Fix the blank/white screen crash caused by TanStack Router context being unavailable when `frontend/src/components/Header.tsx` renders: ensure `Header` does not call `useRouterState()` and `useNavigate()` unless Router context exists, OR ensure `Header` only renders strictly inside the `RouterProvider` tree (source-level fix only; do not edit any compiled bundle files).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-13"
         ],
         "quotes": [
-          "1) Audio Metadata (no audio files yet)\n   - id\n   - ownerPrincipal\n   - uploadedFrom: Studio | CreatorZone\n   - duration\n   - isApproved\n   - isPremium"
+          "Update the Header source file so that it does NOT call useRouterState / useNavigate unless Router context exists,\nOR\nMove Header to render strictly inside the RouterProvider tree."
         ]
       },
       "acceptanceCriteria": [
-        "The backend exposes a Motoko public type representing Audio Metadata with the listed fields and an `uploadedFrom` variant supporting `Studio` and `CreatorZone`.",
-        "No audio bytes, chunking, file storage, playback, or recording-related fields or methods are added."
+        "The app no longer crashes to a blank/white screen on load/refresh due to the router store error shown in the compiled bundle (`return useStore(router.__store, (state) => {})`).",
+        "`frontend/src/components/Header.tsx` no longer unconditionally calls TanStack Router hooks (`useRouterState`, `useNavigate`) when Router context is not yet available.",
+        "No compiled/build output files are edited as part of the fix (only source files)."
       ]
     },
     {
-      "id": "REQ-6",
-      "text": "Implement a Creator Zone submission flow in `backend/main.mo` where an authenticated caller can submit audio metadata into a pending queue, and pending submissions are not publicly visible by default.",
-      "target": "backend",
+      "id": "REQ-54",
+      "text": "Update the application mounting so the routed app is rendered through TanStack Router using the existing `routeTree` (with `/` and `/studio`), ensuring the RouterProvider is mounted before any component that calls TanStack Router hooks (including `Header`) can render.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-13"
         ],
         "quotes": [
-          "2) Creator Zone Submission Flow (metadata only)\n   - Creators can submit audio metadata to a pending queue\n   - Submitted items are NOT public by default"
+          "The root cause is that Header is calling useRouterState() before the RouterProvider is mounted."
         ]
       },
       "acceptanceCriteria": [
-        "There is a backend method for authenticated users to create a pending submission that sets `ownerPrincipal = caller`, `uploadedFrom = #CreatorZone`, and `isApproved = false`.",
-        "Pending submissions are stored separately from approved/public audio metadata.",
-        "No backend query accessible to anonymous/public users returns pending submissions."
+        "`frontend/src/main.tsx` mounts the application under a TanStack `RouterProvider` that uses the existing router created from `frontend/src/router.ts` and `frontend/src/routeTree.tsx`.",
+        "Route paths and definitions remain unchanged (still `/` -> `App`, `/studio` -> `Studio`).",
+        "After deployment, navigating between `/` and `/studio` works without router-context crashes."
       ]
     },
     {
-      "id": "REQ-7",
-      "text": "Implement VAANI Studio (admin panel) backend operations in `backend/main.mo` so an admin can: (1) list all pending submissions, and (2) approve or reject a pending submission by id. Only approved audio metadata becomes visible to non-admin users.",
-      "target": "backend",
+      "id": "REQ-55",
+      "text": "Redeploy after applying the router-provider order fix and verify the initial load no longer results in a blank/white screen.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-13"
         ],
         "quotes": [
-          "3) VAANI Studio (Admin Panel)\n   - Admin can view all pending submissions\n   - Admin can approve or reject submissions\n   - Only approved audio metadata becomes visible to users"
+          "Proceed with this fix and redeploy."
         ]
       },
       "acceptanceCriteria": [
-        "Admin-only method exists to list all pending submissions (returns the pending items and includes their ids).",
-        "Admin-only method exists to approve a pending submission by id; approved items are moved/marked so they appear in the public approved-audio read API.",
-        "Admin-only method exists to reject a pending submission by id; rejected items no longer appear in the pending list and do not appear in approved/public reads.",
-        "A public (non-admin) read API exists that returns only approved audio metadata."
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "text": "Enforce access rules for the audio metadata workflow in `backend/main.mo`: only admins can approve/reject; public users can read only approved audio metadata; and the submitter cannot self-approve their own submission (even if they otherwise have permissions).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "4) Access Rules\n   - Only Admin can approve/reject\n   - Public users can read ONLY approved audio metadata\n   - Creator cannot self-approve"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Approve/reject endpoints trap or otherwise deny when called by a non-admin.",
-        "Public/anonymous queries never return unapproved audio metadata.",
-        "Approve endpoint denies when `caller == ownerPrincipal` for the target submission (self-approval prevention)."
+        "A new deployment is produced with the fix.",
+        "On first paint / initial load, the UI renders (no blank/white screen) and the console no longer shows the router `__store`/`_store` null-access crash."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain single-actor with all Motoko logic in `backend/main.mo`.",
-    "Do not modify existing authentication, role management, or frontend UI code.",
-    "Keep implementation minimal, clean, and extendable."
+    "Do not edit any compiled/bundled files (the error line shown is from the compiled router bundle).",
+    "Do not ask the user for more screenshots.",
+    "Do not change authentication behavior, admin/role logic, backend code, or route definitions/paths (`/` and `/studio`).",
+    "Keep changes narrowly scoped to resolving the Router context crash (provider order and/or Header hook-usage guard).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Audio file upload/storage.",
-    "Recording UI or recording features.",
-    "Playback features.",
-    "Subscriptions, payments, or creator earnings."
+    "Refactoring unrelated UI/components beyond what is necessary to fix the Router context crash.",
+    "Adding new auth flows, role features, or backend endpoints.",
+    "Changing the existing navigation structure or introducing new routes."
   ],
   "imageRequirements": {
     "required": [],

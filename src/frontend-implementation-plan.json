@@ -1,6 +1,64 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "No frontend changes required (backend-only audio metadata workflow)",
-  "requirements": []
+  "title": "Prevent TanStack Router context crash by mounting RouterProvider before Header renders",
+  "requirements": [
+    {
+      "id": "REQ-53",
+      "summary": "Eliminate the blank/white screen crash by ensuring Header does not execute TanStack Router hooks before router context exists (by guaranteeing Header only renders under RouterProvider).",
+      "acceptanceCriteria": [
+        "The app no longer crashes to a blank/white screen on load/refresh due to the router store error shown in the compiled bundle (`return useStore(router.__store, (state) => {})`).",
+        "`frontend/src/components/Header.tsx` no longer unconditionally calls TanStack Router hooks (`useRouterState`, `useNavigate`) when Router context is not yet available.",
+        "No compiled/build output files are edited as part of the fix (only source files)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Adjust Header to be safe with TanStack Router context availability by relying on RouterProvider-first mounting (and removing any assumptions that it can render outside the routed tree). Ensure any TanStack Router hook usage cannot execute before RouterProvider is mounted; keep the change narrowly scoped and source-only."
+        }
+      ]
+    },
+    {
+      "id": "REQ-54",
+      "summary": "Mount the app through TanStack RouterProvider using the existing router/routeTree so routed components (including Header) only render after router context is established.",
+      "acceptanceCriteria": [
+        "`frontend/src/main.tsx` mounts the application under a TanStack `RouterProvider` that uses the existing router created from `frontend/src/router.ts` and `frontend/src/routeTree.tsx`.",
+        "Route paths and definitions remain unchanged (still `/` -> `App`, `/studio` -> `Studio`).",
+        "After deployment, navigating between `/` and `/studio` works without router-context crashes."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Replace direct <App /> mounting with TanStack RouterProvider mounted above the routed app. Import and use the existing router from `frontend/src/router.ts` so RouterProvider is mounted before any route component (and thus before Header) can render."
+        },
+        {
+          "path": "frontend/src/router.ts",
+          "operation": "modify",
+          "description": "Verify router export shape remains compatible with RouterProvider usage from `frontend/src/main.tsx` and that it still uses the existing `routeTree` without changing any route paths/definitions."
+        },
+        {
+          "path": "frontend/src/routeTree.tsx",
+          "operation": "modify",
+          "description": "Confirm the routeTree continues to define the same routes (`/` -> App, `/studio` -> Studio) and is correctly consumed by the router; do not change route paths/definitions."
+        }
+      ]
+    },
+    {
+      "id": "REQ-55",
+      "summary": "Prepare for redeployment and provide a verification checklist to confirm initial load no longer results in a blank/white screen after the RouterProvider order fix.",
+      "acceptanceCriteria": [
+        "A new deployment is produced with the fix.",
+        "On first paint / initial load, the UI renders (no blank/white screen) and the console no longer shows the router `__store`/`_store` null-access crash."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/DEPLOYMENT.md",
+          "operation": "create",
+          "description": "Document the redeploy steps and a short post-deploy verification checklist focused on (1) initial load/refresh rendering without a blank/white screen and (2) navigation between `/` and `/studio` without router-context crashes. Keep scope limited to this fix."
+        }
+      ]
+    }
+  ]
 }

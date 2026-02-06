@@ -1,70 +1,57 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T08:00:11.010Z",
-  "summary": "The diff shows a new `AudioMetadata` type added to `backend/main.mo`, but the backend workflow methods and access-rule enforcement required for pending submissions and admin approve/reject are not evidenced in the truncated backend diff. Additionally, significant frontend UI and hook changes were added/modified despite the BuildRequest explicitly stating backend-only and no frontend/auth modifications.",
+  "generatedAt": "2026-02-06T14:05:56.861Z",
+  "summary": "The diff shows router layout changes in `frontend/src/routeTree.tsx` that render `Header` within the root route (i.e., within the TanStack Router tree), which likely addresses the router-context crash. However, the provided diff does not include the actual `frontend/src/main.tsx` changes to confirm `RouterProvider` mounting order, and redeploy/verification (REQ-55) cannot be evidenced. There are also additional UI/behavior changes (loading component, Studio loading/redirect UI, App layout changes) that were not explicitly requested.",
   "missing_requirements": [
     {
-      "id": "REQ-6",
-      "requirement": "Creator Zone submission flow stores submissions in a pending queue (separate from approved/public), sets `ownerPrincipal = caller`, `uploadedFrom = #CreatorZone`, `isApproved = false`, and pending items are not publicly visible.",
-      "reason": "While `submitAudioForApproval` is declared, the implementation is truncated and there is no visible evidence of (a) a separate pending store vs approved store, nor (b) that the function forces `uploadedFrom = #CreatorZone` and `isApproved = false`, nor (c) that no public query can return pending submissions.",
+      "id": "REQ-54",
+      "requirement": "Update the application mounting so the routed app is rendered through TanStack Router using the existing routeTree, ensuring RouterProvider is mounted before any component that calls TanStack Router hooks (including Header) can render.",
+      "reason": "The diff summary does not include the contents of `frontend/src/main.tsx` (only a high-level mention in `frontend-file-summaries.txt`), so there is no concrete evidence that `RouterProvider` mounting was updated to wrap the app using the existing router created from `frontend/src/router.ts` and `frontend/src/routeTree.tsx`.",
       "evidence": [
-        "backend/main.mo"
+        "frontend-file-summaries.txt",
+        "frontend/src/routeTree.tsx"
       ]
     },
     {
-      "id": "REQ-7",
-      "requirement": "Admin-only backend operations: list all pending submissions, approve by id (making it visible in public approved-audio API), reject by id (removes from pending and not visible publicly), and a public read API that returns only approved audio metadata.",
-      "reason": "The diff summary does not show any backend methods for `getPendingSubmissions`, `approveSubmission`, `rejectSubmission`, or an approved-only public read API implementation; the backend file is truncated before any of these are evidenced.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "requirement": "Enforce access rules: only admins can approve/reject; public reads return only approved; submitter cannot self-approve (deny when `caller == ownerPrincipal`).",
-      "reason": "No backend-side authorization checks for approve/reject or self-approval prevention are shown in the truncated backend diff. UI-level self-approval prevention is present, but the requirement is explicitly backend enforcement.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/components/AdminPanel.tsx"
-      ]
+      "id": "REQ-55",
+      "requirement": "Redeploy after applying the router-provider order fix and verify the initial load no longer results in a blank/white screen.",
+      "reason": "Redeployment and post-deploy verification are not represented in the source diff; no evidence is provided that a new deployment was produced or that the crash was verified resolved.",
+      "evidence": []
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Frontend UI added for Creator Zone submission (form) and Studio approved-audio listing, plus dashboard tab integration.",
-      "reason": "BuildRequest explicitly states 'backend only' and 'Do not modify ... frontend UI code', but new components and dashboard wiring were added.",
+      "description": "Introduced a new reusable full-screen loading component with customizable message text.",
+      "reason": "BuildRequest focuses narrowly on fixing the TanStack Router context crash (provider order and/or Header hook-usage guard). Adding new loading UI is not requested by REQ-53/54/55.",
       "evidence": [
-        "frontend/src/components/CreatorZoneTab.tsx",
-        "frontend/src/components/StudioTab.tsx",
-        "frontend/src/components/Dashboard.tsx"
+        "frontend/src/components/FullScreenLoading.tsx"
       ]
     },
     {
-      "description": "Frontend admin panel enhancements for pending submission approval/rejection and self-approval prevention in the UI.",
-      "reason": "Not requested (backend-only change), and explicitly disallowed frontend modification.",
+      "description": "Changed the Studio page UX to show loading/redirecting full-screen states and added navigation redirect effect using TanStack Router navigate hook.",
+      "reason": "The request explicitly constrains changes to resolving the router-context crash and asks not to change authentication/admin/role logic. While the redirect may be pre-existing, the diff shows additional UX/loading behavior beyond the stated scope.",
       "evidence": [
-        "frontend/src/components/AdminPanel.tsx"
+        "frontend/src/pages/Studio.tsx"
       ]
     },
     {
-      "description": "New/extended React Query hooks for audio metadata workflow (submit/get pending/approve/reject/get approved).",
-      "reason": "Not requested (backend-only change) and implies frontend behavior changes.",
+      "description": "Changed the home `App` component to render only the page content (no Header/Footer), relying on the router root layout to provide Header/Footer.",
+      "reason": "Not explicitly requested; the request was to ensure Header renders under RouterProvider / avoid router-hook calls without context. This is an additional layout restructuring beyond the minimum described, even if related.",
       "evidence": [
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/routeTree.tsx"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
     "frontend/src/components/AdminPanel.tsx",
-    "frontend/src/components/CreatorZoneTab.tsx",
-    "frontend/src/components/Dashboard.tsx",
-    "frontend/src/components/StudioTab.tsx",
-    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/components/FullScreenLoading.tsx",
+    "frontend/src/pages/Studio.tsx",
+    "frontend/src/routeTree.tsx",
     "project_state.json"
   ]
 }

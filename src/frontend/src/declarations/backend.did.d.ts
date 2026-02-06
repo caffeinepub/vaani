@@ -52,6 +52,7 @@ export interface _SERVICE {
   'saveCallerUserProfile' : ActorMethod<[string, boolean], undefined>,
   'searchArtists' : ActorMethod<[string], Array<[Principal, Profile]>>,
   'submitAudioForApproval' : ActorMethod<[AudioSubmissionInput], undefined>,
+  'whoAmI' : ActorMethod<[], string>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

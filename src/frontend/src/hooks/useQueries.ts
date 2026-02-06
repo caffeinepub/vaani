@@ -2,30 +2,37 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import type { Profile, UserRole, AudioMetadata, AudioSubmissionInput } from '../backend';
 import { Principal } from '@dfinity/principal';
+import { useInternetIdentity } from './useInternetIdentity';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
+  const { identity } = useInternetIdentity();
+  const principalId = identity?.getPrincipal().toString();
 
   const query = useQuery<Profile | null>({
-    queryKey: ['currentUserProfile'],
+    queryKey: ['currentUserProfile', principalId],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getCallerUserProfile();
     },
-    enabled: !!actor && !actorFetching,
+    enabled: !!actor && !actorFetching && !!principalId,
     retry: false,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   return {
     ...query,
     isLoading: actorFetching || query.isLoading,
-    isFetched: !!actor && query.isFetched,
+    isFetched: !!actor && !!principalId && query.isFetched,
   };
 }
 
 export function useSaveCallerUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const { identity } = useInternetIdentity();
+  const principalId = identity?.getPrincipal().toString();
 
   return useMutation({
     mutationFn: async ({ displayName, subscription }: { displayName: string; subscription: boolean }) => {
@@ -33,34 +40,44 @@ export function useSaveCallerUserProfile() {
       return actor.saveCallerUserProfile(displayName, subscription);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile', principalId] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserRole', principalId] });
+      queryClient.invalidateQueries({ queryKey: ['isCallerAdmin', principalId] });
     },
   });
 }
 
 export function useGetCallerUserRole() {
   const { actor, isFetching: actorFetching } = useActor();
+  const { identity } = useInternetIdentity();
+  const principalId = identity?.getPrincipal().toString();
 
   return useQuery<UserRole>({
-    queryKey: ['currentUserRole'],
+    queryKey: ['currentUserRole', principalId],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getCallerUserRole();
     },
-    enabled: !!actor && !actorFetching,
+    enabled: !!actor && !actorFetching && !!principalId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
 export function useIsCallerAdmin() {
   const { actor, isFetching: actorFetching } = useActor();
+  const { identity } = useInternetIdentity();
+  const principalId = identity?.getPrincipal().toString();
 
   return useQuery<boolean>({
-    queryKey: ['isCallerAdmin'],
+    queryKey: ['isCallerAdmin', principalId],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.isCallerAdmin();
     },
-    enabled: !!actor && !actorFetching,
+    enabled: !!actor && !actorFetching && !!principalId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
@@ -163,5 +180,23 @@ export function useGetAllApprovedAudio() {
       return actor.getAllApprovedAudio();
     },
     enabled: !!actor && !actorFetching,
+  });
+}
+
+// Minimal WhoAmI Query
+export function useWhoAmI() {
+  const { actor, isFetching: actorFetching } = useActor();
+  const { identity } = useInternetIdentity();
+  const principalId = identity?.getPrincipal().toString();
+
+  return useQuery<string>({
+    queryKey: ['whoAmI', principalId],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.whoAmI();
+    },
+    enabled: !!actor && !actorFetching && !!principalId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }

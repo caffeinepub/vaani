@@ -135,6 +135,7 @@ export interface backendInterface {
     saveCallerUserProfile(displayName: string, subscription: boolean): Promise<void>;
     searchArtists(search: string): Promise<Array<[Principal, Profile]>>;
     submitAudioForApproval(input: AudioSubmissionInput): Promise<void>;
+    whoAmI(): Promise<string>;
 }
 import type { AudioMetadata as _AudioMetadata, AudioSubmissionInput as _AudioSubmissionInput, Profile as _Profile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -374,6 +375,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.submitAudioForApproval(to_candid_AudioSubmissionInput_n15(this._uploadFile, this._downloadFile, arg0));
+            return result;
+        }
+    }
+    async whoAmI(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.whoAmI();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.whoAmI();
             return result;
         }
     }
