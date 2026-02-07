@@ -25,6 +25,7 @@ export const AudioMetadata = IDL.Record({
   'ownerPrincipal' : IDL.Principal,
 });
 export const Profile = IDL.Record({
+  'principal' : IDL.Principal,
   'displayName' : IDL.Text,
   'subscription' : IDL.Bool,
   'role' : UserRole,
@@ -55,11 +56,7 @@ export const idlService = IDL.Service({
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'rejectSubmission' : IDL.Func([IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([IDL.Text, IDL.Bool], [], []),
-  'searchArtists' : IDL.Func(
-      [IDL.Text],
-      [IDL.Vec(IDL.Tuple(IDL.Principal, Profile))],
-      ['query'],
-    ),
+  'searchArtists' : IDL.Func([IDL.Text], [IDL.Vec(Profile)], ['query']),
   'submitAudioForApproval' : IDL.Func([AudioSubmissionInput], [], []),
   'whoAmI' : IDL.Func([], [IDL.Text], ['query']),
 });
@@ -84,6 +81,7 @@ export const idlFactory = ({ IDL }) => {
     'ownerPrincipal' : IDL.Principal,
   });
   const Profile = IDL.Record({
+    'principal' : IDL.Principal,
     'displayName' : IDL.Text,
     'subscription' : IDL.Bool,
     'role' : UserRole,
@@ -114,11 +112,7 @@ export const idlFactory = ({ IDL }) => {
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'rejectSubmission' : IDL.Func([IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([IDL.Text, IDL.Bool], [], []),
-    'searchArtists' : IDL.Func(
-        [IDL.Text],
-        [IDL.Vec(IDL.Tuple(IDL.Principal, Profile))],
-        ['query'],
-      ),
+    'searchArtists' : IDL.Func([IDL.Text], [IDL.Vec(Profile)], ['query']),
     'submitAudioForApproval' : IDL.Func([AudioSubmissionInput], [], []),
     'whoAmI' : IDL.Func([], [IDL.Text], ['query']),
   });

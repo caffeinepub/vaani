@@ -9,7 +9,7 @@ import { useSubmitAudioForApproval } from '../hooks/useQueries';
 import { Variant_Studio_CreatorZone } from '../backend';
 import { toast } from 'sonner';
 import CreatorZoneAuthControls from './CreatorZoneAuthControls';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // useAuth requires AuthProvider above
 import { Alert, AlertDescription } from './ui/alert';
 
 export default function CreatorZoneTab() {
@@ -18,7 +18,7 @@ export default function CreatorZoneTab() {
   const [isPremium, setIsPremium] = useState(false);
 
   const submitMutation = useSubmitAudioForApproval();
-  const { autoLogoutReason, dismissIdleNotice } = useAuth();
+  const { autoLogoutReason, dismissIdleNotice } = useAuth(); // Requires AuthProvider
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

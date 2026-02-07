@@ -13,7 +13,7 @@ import {
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // Requires AuthProvider above
 
 export default function Header() {
   // Call ALL hooks unconditionally at the top level (required by React rules)
@@ -24,7 +24,7 @@ export default function Header() {
   const routerState = useRouterState();
   const previousIdentityRef = useRef<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const { logout } = useAuth();
+  const { logout } = useAuth(); // Requires AuthProvider
 
   const isAuthenticated = !!identity;
   const currentPrincipalId = identity?.getPrincipal().toString();

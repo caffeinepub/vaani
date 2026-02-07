@@ -1,57 +1,82 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix AuthProvider placement so useAuth never renders outside provider",
+  "title": "Refactor AuthProvider hierarchy to wrap router tree and prevent useAuth crashes",
   "requirements": [
     {
-      "id": "REQ-72",
-      "summary": "Mount AuthProvider at the absolute top of the app tree so it always wraps TanStack RouterProvider and all routed content, eliminating useAuth crash during auth transitions.",
+      "id": "REQ-1",
+      "summary": "Refactor AuthProvider so it wraps the entire app while rendering InternetIdentityProvider internally, keeping AuthContext logic able to consume Internet Identity state safely.",
       "acceptanceCriteria": [
-        "`frontend/src/main.tsx` no longer renders `<App />` directly; the routed application is rendered via TanStack Router’s `RouterProvider` using the existing `router`/`routeTree`.",
-        "The mounted provider order ensures `AuthProvider` wraps `RouterProvider` (and thus all routed content) without any conditional rendering of provider presence.",
-        "Reproducing the prior flow (initial load, then login, then logout) no longer produces the console error `useAuth must be used within AuthProvider`, and the UI does not blank/white-screen.",
-        "`CreatorZoneTab` (and any other `useAuth()` consumer) is never rendered outside `AuthProvider` at any point during transitions."
+        "`useAuth` is never invoked outside of an active AuthContext provider during any route render.",
+        "The exported/used `AuthProvider` component is mounted above `InternetIdentityProvider` in the React tree.",
+        "No try/catch wrappers or conditional `useAuth()` calls are introduced anywhere."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/contexts/AuthContext.tsx",
+          "operation": "modify",
+          "description": "Refactor to export an outer `AuthProvider` wrapper that mounts `InternetIdentityProvider` internally, and move the existing context logic into an internal provider component that calls `useInternetIdentity`. Ensure the exported `useAuth` continues to throw when used outside provider (no conditional usage). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Update root composition so the entire router tree (including Header, CreatorZoneTab, and all routes) is rendered inside AuthProvider.",
+      "acceptanceCriteria": [
+        "All route renders (including `/` and `/studio`) occur under `AuthProvider` (no `useAuth must be used within AuthProvider` runtime error).",
+        "Unauthenticated initial load shows the home route without a blank/white screen.",
+        "`Header` and `CreatorZoneTab` render without crashing on every route."
       ],
       "file_operations": [
         {
           "path": "frontend/src/main.tsx",
           "operation": "modify",
-          "description": "Replace direct `<App />` rendering with TanStack Router’s `RouterProvider` using the existing exported `router`, and move `AuthProvider` (from `frontend/src/contexts/AuthContext.tsx`) to unconditionally wrap `RouterProvider` at the top of the React tree (above all routes/components, including `CreatorZoneTab`). Keep existing providers (React Query, Internet Identity) mounted without condition. Use the selected `authorization` component patterns for auth lifecycle expectations; verify the component's usage instructions before implementing."
+          "description": "Replace direct `App` render with TanStack `RouterProvider` using the existing `router`, and wrap `RouterProvider` (and therefore all routes including root layout Header/Footer) inside the exported `AuthProvider`. Remove the top-level `InternetIdentityProvider` usage here since it is now mounted inside `AuthProvider`. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-73",
-      "summary": "Remove any duplicate/nested AuthProvider usage so exactly one AuthProvider instance wraps the entire routed tree.",
+      "id": "REQ-3",
+      "summary": "Preserve current auth behaviors after provider hierarchy changes (login/logout, admin redirect to /studio, query cache clearing on logout, and idle-timeout auto-logout banner).",
       "acceptanceCriteria": [
-        "There is a single, top-level `AuthProvider` for the application; no nested/duplicate `AuthProvider` instances remain in route/layout/component trees.",
-        "No component that calls `useAuth()` can be reached/rendered unless it is a descendant of the single top-level `AuthProvider`."
+        "Clicking \"Log in\" completes Internet Identity authentication and the UI updates to the authenticated state.",
+        "Clicking \"Log out\" logs the user out, returns to `/`, and clears cached identity-scoped data as before.",
+        "Admin users are redirected to `/studio` after login (once admin status is resolved).",
+        "Idle timeout (5 minutes) logs the user out and displays the existing inactivity alert in Creator Zone without console errors."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/routeTree.tsx",
+          "path": "frontend/src/contexts/AuthContext.tsx",
           "operation": "modify",
-          "description": "Audit the routed layout tree to ensure it does not mount or re-mount `AuthProvider` (or any wrapper that includes it) anywhere inside the router hierarchy; keep route paths and definitions unchanged (`/` and `/studio`). If any nested/duplicate provider is found during audit, remove it so only the `frontend/src/main.tsx` top-level `AuthProvider` remains. Use the selected `authorization` component guidance to ensure all `useAuth()` consumers are descendants; verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Audit the home route component tree (including `CreatorZoneTab`) to ensure it does not introduce its own `AuthProvider` wrapper and relies solely on the single top-level provider from `frontend/src/main.tsx`. Make any necessary adjustments to remove duplicate/nested providers (if present) without changing user-facing text or route behavior. Use the selected `authorization` component guidance; verify the component's usage instructions before implementing."
+          "description": "Adjust auth transition logic to ensure the admin redirect to `/studio` still happens after login even if admin status resolves after identity is set (e.g., track a one-time post-login redirect eligibility per principal). Keep logout behavior to clear React Query cache and navigate to `/`, and keep idle timeout auto-logout reason state used by Creator Zone banner. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-74",
-      "summary": "Document redeploy + deployed-environment verification steps for the provider-order fix.",
+      "id": "REQ-4",
+      "summary": "Ensure the fix is applied only in source TS/TSX files under frontend/src/** and not in any compiled artifacts.",
       "acceptanceCriteria": [
-        "A new deployed version is produced after the provider-order change.",
-        "In the deployed version, the app no longer shows a blank screen and the console no longer logs `Uncaught Error: useAuth must be used within AuthProvider` originating from `CreatorZoneTab`."
+        "No changes are made to generated/compiled output files; only source files are modified."
       ],
       "file_operations": [
         {
           "path": "frontend/DEPLOYMENT_VERIFICATION.md",
-          "operation": "create",
-          "description": "Add a short redeploy-and-verify checklist specific to this fix: rebuild/redeploy steps for the frontend, and a deployed-environment verification script (load → login → logout) including what to check in the console (absence of `useAuth must be used within AuthProvider`) and that the UI does not white-screen. Keep all text in English."
+          "operation": "modify",
+          "description": "Add/adjust verification notes to explicitly confirm that only `frontend/src/**` source files were modified for this change and no compiled artifacts were edited."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Update verification guidance to reflect the new root/provider wiring and ensure redeploy verification steps are followed.",
+      "acceptanceCriteria": [
+        "Deployed app passes the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` without the `useAuth must be used within AuthProvider` error and without any blank screen during navigation/auth transitions."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/DEPLOYMENT_VERIFICATION.md",
+          "operation": "modify",
+          "description": "Update the \"Provider Hierarchy Verification\" section to match the new composition (AuthProvider wrapping RouterProvider and rendering InternetIdentityProvider internally), and keep the existing checklist items for initial load, login, logout, navigation, idle timeout, and console-clean operation."
         }
       ]
     }

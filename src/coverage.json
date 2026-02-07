@@ -1,18 +1,29 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T16:59:30.391Z",
+  "generatedAt": "2026-02-07T04:11:30.352Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 1,
+    "total": 5,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-72",
-        "summary": "Move `AuthProvider` to the absolute top of the React app tree so it unconditionally wraps `RouterProvider` and therefore all routes/components (including `CreatorZoneTab`), eliminating the runtime crash `Uncaught Error: useAuth must be used within AuthProvider` during login/logout transitions.",
+        "id": "REQ-1",
+        "summary": "Refactor the auth provider setup so a real `AuthProvider` wraps the entire app/router tree, and the `AuthProvider` component is above `InternetIdentityProvider` in the rendered hierarchy while still allowing AuthContext to use Internet Identity state internally (e.g., by making `AuthProvider` an outer wrapper that renders `InternetIdentityProvider` and an internal provider that uses `useInternetIdentity`).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/contexts/AuthContext.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/contexts/AuthContext.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Update the application root composition (in `frontend/src/main.tsx` or the root entry component it renders) so that `RouterProvider`, `Header`, `CreatorZoneTab`, and all routes are rendered inside the `AuthProvider` boundary (ensuring the router tree is fully wrapped).",
         "status": "missing",
         "plannedFiles": [
           "frontend/src/main.tsx"
@@ -20,18 +31,30 @@
         "matchedFiles": []
       },
       {
-        "id": "REQ-73",
-        "summary": "Audit and remove any duplicate/nested `AuthProvider` placements (if any exist) so there is exactly one `AuthProvider` instance wrapping the entire routed tree; ensure no route/layout/component can mount outside it.",
-        "status": "missing",
+        "id": "REQ-3",
+        "summary": "Preserve and validate existing auth behaviors after provider hierarchy changes: login, logout, admin redirect to `/studio`, query-cache clearing on logout, and idle timeout auto-logout banner behavior in Creator Zone.",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/src/routeTree.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/contexts/AuthContext.tsx"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/src/contexts/AuthContext.tsx"
+        ]
       },
       {
-        "id": "REQ-74",
-        "summary": "Redeploy a new version after applying the structural provider-order fix and verify the fix in the deployed environment (not just local dev).",
+        "id": "REQ-4",
+        "summary": "Do not modify compiled/built artifacts; apply the fix only in source TypeScript/TSX files (e.g., under `frontend/src/**`).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/DEPLOYMENT_VERIFICATION.md"
+        ],
+        "matchedFiles": [
+          "frontend/DEPLOYMENT_VERIFICATION.md"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Redeploy after applying the fix and verify using the checks described in `frontend/DEPLOYMENT_VERIFICATION.md` (initial load, login, logout, navigation, idle timeout, and console error-free operation).",
         "status": "implemented",
         "plannedFiles": [
           "frontend/DEPLOYMENT_VERIFICATION.md"
@@ -49,6 +72,7 @@
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/DEPLOYMENT_VERIFICATION.md",
+    "frontend/src/contexts/AuthContext.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

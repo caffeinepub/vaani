@@ -90,6 +90,7 @@ export class ExternalBlob {
     }
 }
 export interface Profile {
+    principal: Principal;
     displayName: string;
     subscription: boolean;
     role: UserRole;
@@ -133,7 +134,7 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     rejectSubmission(submissionId: string): Promise<void>;
     saveCallerUserProfile(displayName: string, subscription: boolean): Promise<void>;
-    searchArtists(search: string): Promise<Array<[Principal, Profile]>>;
+    searchArtists(search: string): Promise<Array<Profile>>;
     submitAudioForApproval(input: AudioSubmissionInput): Promise<void>;
     whoAmI(): Promise<string>;
 }
@@ -350,31 +351,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async searchArtists(arg0: string): Promise<Array<[Principal, Profile]>> {
+    async searchArtists(arg0: string): Promise<Array<Profile>> {
         if (this.processError) {
             try {
                 const result = await this.actor.searchArtists(arg0);
-                return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n7(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.searchArtists(arg0);
-            return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n7(this._uploadFile, this._downloadFile, result);
         }
     }
     async submitAudioForApproval(arg0: AudioSubmissionInput): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.submitAudioForApproval(to_candid_AudioSubmissionInput_n15(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.submitAudioForApproval(to_candid_AudioSubmissionInput_n13(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.submitAudioForApproval(to_candid_AudioSubmissionInput_n15(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.submitAudioForApproval(to_candid_AudioSubmissionInput_n13(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -434,25 +435,22 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
     };
 }
 function from_candid_record_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    principal: Principal;
     displayName: string;
     subscription: boolean;
     role: _UserRole;
 }): {
+    principal: Principal;
     displayName: string;
     subscription: boolean;
     role: UserRole;
 } {
     return {
+        principal: value.principal,
         displayName: value.displayName,
         subscription: value.subscription,
         role: from_candid_UserRole_n10(_uploadFile, _downloadFile, value.role)
     };
-}
-function from_candid_tuple_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [Principal, _Profile]): [Principal, Profile] {
-    return [
-        value[0],
-        from_candid_Profile_n8(_uploadFile, _downloadFile, value[1])
-    ];
 }
 function from_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
@@ -470,22 +468,19 @@ function from_candid_variant_n6(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): Variant_Studio_CreatorZone {
     return "Studio" in value ? Variant_Studio_CreatorZone.Studio : "CreatorZone" in value ? Variant_Studio_CreatorZone.CreatorZone : value;
 }
-function from_candid_vec_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<[Principal, _Profile]>): Array<[Principal, Profile]> {
-    return value.map((x)=>from_candid_tuple_n14(_uploadFile, _downloadFile, x));
-}
 function from_candid_vec_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AudioMetadata>): Array<AudioMetadata> {
     return value.map((x)=>from_candid_AudioMetadata_n4(_uploadFile, _downloadFile, x));
 }
 function from_candid_vec_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Profile>): Array<Profile> {
     return value.map((x)=>from_candid_Profile_n8(_uploadFile, _downloadFile, x));
 }
-function to_candid_AudioSubmissionInput_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AudioSubmissionInput): _AudioSubmissionInput {
-    return to_candid_record_n16(_uploadFile, _downloadFile, value);
+function to_candid_AudioSubmissionInput_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AudioSubmissionInput): _AudioSubmissionInput {
+    return to_candid_record_n14(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
     uploadedFrom: Variant_Studio_CreatorZone;
     duration: bigint;
@@ -502,12 +497,12 @@ function to_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8
 } {
     return {
         id: value.id,
-        uploadedFrom: to_candid_variant_n17(_uploadFile, _downloadFile, value.uploadedFrom),
+        uploadedFrom: to_candid_variant_n15(_uploadFile, _downloadFile, value.uploadedFrom),
         duration: value.duration,
         isPremium: value.isPremium
     };
 }
-function to_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Variant_Studio_CreatorZone): {
+function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Variant_Studio_CreatorZone): {
     Studio: null;
 } | {
     CreatorZone: null;

@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Eliminate the `useAuth must be used within AuthProvider` crash by restructuring the React provider tree so `AuthProvider` always wraps the entire routed app (including `CreatorZoneTab`), and redeploy the fix.
+**Goal:** Fix the React provider hierarchy so `useAuth()` is always executed within an active `AuthProvider`, preventing blank/white screens and runtime crashes during route renders.
 
 **Planned changes:**
-- Update `frontend/src/main.tsx` so the app is rendered via TanStack Router’s `RouterProvider` using the existing `router`/`routeTree`, with `AuthProvider` mounted at the absolute top of the React tree.
-- Ensure `AuthProvider` unconditionally wraps `RouterProvider` (no conditional provider mounting) so all routes/components are always descendants of `AuthProvider`.
-- Audit the frontend route/layout/component tree and remove any duplicate or nested `AuthProvider` usages so there is exactly one top-level instance.
-- Produce and deploy a new version after the provider-order fix and verify the login/logout flow no longer triggers the crash or blank screen in the deployed environment.
+- Refactor the auth provider setup so the exported/used `AuthProvider` wraps the entire app/router tree and is mounted above `InternetIdentityProvider`, while still allowing AuthContext to consume Internet Identity state internally (without changing `useInternetIdentity`).
+- Update the application root composition (`frontend/src/main.tsx` or its entry component) so `RouterProvider`, `Header`, `CreatorZoneTab`, and all routes render inside the `AuthProvider` boundary.
+- Validate that existing auth behaviors remain intact after the hierarchy change: login, logout, admin redirect to `/studio`, query-cache clearing on logout, and 5-minute idle timeout auto-logout banner behavior in Creator Zone.
+- Apply changes only to source TS/TSX files under `frontend/src/**` (no compiled/generated artifact edits) and redeploy, verifying via `frontend/DEPLOYMENT_VERIFICATION.md`.
 
-**User-visible outcome:** Users can load the app and perform login/logout transitions without a blank/white screen, and without the console error `Uncaught Error: useAuth must be used within AuthProvider` (including when `CreatorZoneTab` renders).
+**User-visible outcome:** The app loads reliably (including when unauthenticated) without blank screens; `Header` and `CreatorZoneTab` render safely on every route; login/logout flows, admin redirect, cache clearing, and idle timeout behavior work as before with no `useAuth must be used within AuthProvider` errors.

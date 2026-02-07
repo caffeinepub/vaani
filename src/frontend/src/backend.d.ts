@@ -8,6 +8,7 @@ export interface None {
 }
 export type Option<T> = Some<T> | None;
 export interface Profile {
+    principal: Principal;
     displayName: string;
     subscription: boolean;
     role: UserRole;
@@ -50,7 +51,7 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     rejectSubmission(submissionId: string): Promise<void>;
     saveCallerUserProfile(displayName: string, subscription: boolean): Promise<void>;
-    searchArtists(search: string): Promise<Array<[Principal, Profile]>>;
+    searchArtists(search: string): Promise<Array<Profile>>;
     submitAudioForApproval(input: AudioSubmissionInput): Promise<void>;
     whoAmI(): Promise<string>;
 }

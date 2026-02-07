@@ -8,11 +8,14 @@ import Iter "mo:core/Iter";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
+// Specify migration strategy during upgrade
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
   public type Profile = {
+    principal : Principal;
     displayName : Text;
     role : AccessControl.UserRole;
     subscription : Bool;
@@ -49,7 +52,7 @@ actor {
 
   public query ({ caller }) func getCallerUserProfile() : async ?Profile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+      Runtime.trap("Unauthorized: Only users can save profiles");
     };
     profiles.get(caller);
   };
@@ -68,6 +71,7 @@ actor {
 
     let role = AccessControl.getUserRole(accessControlState, caller);
     let profile : Profile = {
+      principal = caller;
       displayName;
       role;
       subscription;
@@ -87,6 +91,7 @@ actor {
   };
 
   public query ({ caller }) func getAllArtistProfiles() : async [Profile] {
+    // Public endpoint - accessible to all including guests
     let allProfiles = profiles.values().toArray();
     let artistProfiles = allProfiles.filter(func(p) {
       p.role == #admin or p.subscription;
@@ -94,9 +99,10 @@ actor {
     artistProfiles.sort<Profile>();
   };
 
-  public query ({ caller }) func searchArtists(search : Text) : async [(Principal, Profile)] {
-    let allEntries = profiles.entries().toArray();
-    allEntries.filter<(Principal, Profile)>(func((_, p)) {
+  public query ({ caller }) func searchArtists(search : Text) : async [Profile] {
+    // Public endpoint - accessible to all including guests
+    let allProfiles = profiles.values().toArray();
+    allProfiles.filter<Profile>(func(p) {
       (p.role == #admin or p.subscription) and p.displayName.contains(#text search);
     });
   };
@@ -157,6 +163,7 @@ actor {
   };
 
   public query ({ caller }) func getApprovedAudio(audioId : Text) : async AudioMetadata {
+    // Public endpoint - accessible to all including guests
     switch (audios.get(audioId)) {
       case (null) { Runtime.trap("Audio " # audioId # " does not exist") };
       case (?audio) {
@@ -169,6 +176,7 @@ actor {
   };
 
   public query ({ caller }) func getAllApprovedAudio() : async [AudioMetadata] {
+    // Public endpoint - accessible to all including guests
     let allAudios = audios.values().toArray();
     allAudios.filter(func(a) { a.isApproved });
   };
@@ -184,6 +192,7 @@ actor {
   };
 
   public query ({ caller }) func whoAmI() : async Text {
+    // Public endpoint - accessible to all including guests
     caller.toText();
   };
 };

@@ -27,6 +27,7 @@ export interface AudioSubmissionInput {
   'isPremium' : boolean,
 }
 export interface Profile {
+  'principal' : Principal,
   'displayName' : string,
   'subscription' : boolean,
   'role' : UserRole,
@@ -50,7 +51,7 @@ export interface _SERVICE {
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'rejectSubmission' : ActorMethod<[string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[string, boolean], undefined>,
-  'searchArtists' : ActorMethod<[string], Array<[Principal, Profile]>>,
+  'searchArtists' : ActorMethod<[string], Array<Profile>>,
   'submitAudioForApproval' : ActorMethod<[AudioSubmissionInput], undefined>,
   'whoAmI' : ActorMethod<[], string>,
 }
