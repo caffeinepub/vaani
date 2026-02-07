@@ -1,47 +1,85 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "VAANI testing build redeploy & verification (frontend-only)",
+  "title": "Compact, premium header spacing and minimal landing page polish",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add repeatable redeploy workflow for the existing VAANI testing build (no new project) with a safe retry path on failure.",
+      "summary": "Make the global header more compact and visually balanced across breakpoints while keeping logo left and auth controls top-right.",
       "acceptanceCriteria": [
-        "A new deployment is completed for the existing VAANI project (not a new canister/app).",
-        "If a deployment error occurs, the deployment is retried and completes successfully.",
-        "The deployed app is reachable in a browser as a testing build."
+        "On all common viewport widths (mobile, tablet, desktop), the header height/padding is slightly reduced compared to current, while maintaining comfortable spacing between logo and right-side controls.",
+        "Logo remains left-aligned, clickable, and navigates to `/`.",
+        "When unauthenticated, the \"Log in\" button stays visually anchored to the top-right area of the header; when authenticated, the user menu control stays in the same position.",
+        "Header maintains a light, modern look (subtle border/backdrop blur is acceptable) with no crowded elements or misalignment."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/redeploy-testing-build.sh",
-          "operation": "create",
-          "description": "Create a redeploy helper script that runs the existing deploy command(s) for the current VAANI project and includes a simple retry-on-failure flow (re-run deploy after an error). Keep it non-destructive (no project initialization) and focused on redeploying the current draft."
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Refine header layout spacing and sizing (slightly reduced height/padding, consistent gaps across breakpoints), keep left-aligned clickable logo routing to `/`, and keep right-side auth controls anchored consistently. Update the logo asset reference to the existing generated PNGs (use `frontend/public/assets/generated/vaani-logo-header.dim_240x64.png` with optional high-DPI `frontend/public/assets/generated/vaani-logo-header@2x.dim_480x128.png`) to avoid broken assets. Use shadcn-ui components (Button, DropdownMenu) to preserve consistent premium UI behavior. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/DEPLOYMENT_VERIFICATION.md",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Fill in the currently-empty 'Rebuild & Redeploy Commands' section with the exact commands used to redeploy the existing VAANI project and how to retry safely if the previous attempt errors, without initializing a new project."
+          "description": "Adjust global base styling for a cleaner premium feel (e.g., font smoothing, slightly refined default text rendering) while keeping the existing Tailwind/token approach and restrained neutral palette."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Update verification checklist to match the current provider hierarchy and ensure the header logo asset is present to avoid console/provider errors and asset 404s in the live testing build.",
+      "summary": "Polish the Home (landing) page typography, whitespace, and alignment to a clean minimal premium style without changing structure/content.",
       "acceptanceCriteria": [
-        "All checklist items in `frontend/DEPLOYMENT_VERIFICATION.md` can be confirmed in the live environment.",
-        "No provider-related console errors occur (e.g., \"useAuth must be used within AuthProvider\" / \"useInternetIdentity must be used within InternetIdentityProvider\").",
-        "No broken image/asset 404 errors occur for the header logo asset."
+        "Home page keeps the same components/sections (welcome heading + Creator Zone card) without adding new sections.",
+        "Visual hierarchy is improved: heading/subheading spacing, font sizes/weights, and max-width feel intentional and premium.",
+        "Colors are restrained (primarily neutrals); any accent color usage is subtle and does not dominate the page.",
+        "Alignment and spacing are consistent (container padding, vertical rhythm, and card placement look polished)."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg",
-          "operation": "create",
-          "description": "Add the required generated header wordmark asset at the exact path `frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg` so the live build does not 404 when loading the header logo."
+          "path": "frontend/src/pages/Home.tsx",
+          "operation": "modify",
+          "description": "Refine existing layout only (no new sections): adjust container max-width, vertical rhythm, and heading/subheading typography to feel more premium and whitespace-driven; keep the same welcome header and Creator Zone card placement."
         },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "If needed for consistent premium spacing/typography, extend Tailwind theme minimally (e.g., tuned container padding/typography defaults) while keeping the palette restrained and avoiding heavy accents."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Polish the Creator Zone card visual presentation (spacing/typography/density) without altering submission behavior or adding features.",
+      "acceptanceCriteria": [
+        "Creator Zone card header/content spacing is balanced and consistent with the refined landing page style.",
+        "Form controls retain current behavior (validation/toasts/submission) with no regressions.",
+        "No new fields, flows, or sections are introduced."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/CreatorZoneTab.tsx",
+          "operation": "modify",
+          "description": "Tighten and polish card header/content spacing, typography, and visual density while preserving all existing form behavior, validation/toasts, and submission. Use existing shadcn-ui components (Card, Button, Input, Label, Switch, Alert) to maintain consistent styling. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Prepare a new deployed frontend build and update the deployment verification checklist to cover the header and landing page polish.",
+      "acceptanceCriteria": [
+        "A new deployed build is produced after UI changes.",
+        "Deployment verification documentation includes at least a brief checklist confirming header spacing/alignment and Home page spacing/typography changes are visible in the live build."
+      ],
+      "file_operations": [
         {
           "path": "frontend/DEPLOYMENT_VERIFICATION.md",
           "operation": "modify",
-          "description": "Align the 'Provider Hierarchy Verification' section with the actual app wrapper order (as implemented in `frontend/src/main.tsx` and `frontend/src/App.tsx`), and ensure the checklist explicitly validates that `frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg` is served without 404 and that provider-related console errors do not occur."
+          "description": "Update the checklist to include explicit verification items for: header compactness/breathing room across breakpoints, left logo click-to-home behavior, top-right auth control anchoring in both auth states, and Home page typography/whitespace/hierarchy polish being visible in the live build."
+        },
+        {
+          "path": "frontend/scripts/redeploy-testing-build.sh",
+          "operation": "modify",
+          "description": "Update the redeploy script comments/steps (documentation-level) to remind reviewers to validate the new header spacing and Home/Creator Zone visual polish after deploying the updated frontend build."
         }
       ]
     }

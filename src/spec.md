@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Redeploy the existing VAANI project to produce a publicly accessible testing build and verify it passes the deployment verification checklist.
+**Goal:** Polish the global header spacing and refine the Home (landing) page to a clean, minimal, premium Apple-style look while keeping existing structure and functionality.
 
 **Planned changes:**
-- Redeploy the current VAANI project (no new project/canister) to create a new public testing build, retrying if a deployment attempt errors.
-- Verify the live deployment against `frontend/DEPLOYMENT_VERIFICATION.md` (unauthenticated load, login, authenticated navigation, logout, idle timeout, logo rendering, and console checks).
-- Confirm no provider-related console errors and no broken/404 logo asset requests in the live build.
+- Adjust global header layout to be slightly more compact and balanced across breakpoints, keeping the VAANI logo left-aligned and the Log in/user controls anchored top-right with consistent padding and alignment.
+- Refine Home page styling (whitespace, typography, alignment, max-width, vertical rhythm) to feel premium and minimal without adding or removing any sections/content.
+- Polish the Creator Zone card’s visual density (spacing and typography) to match the updated landing page styling, without changing form behavior or submission flow.
+- Deploy an updated frontend build and update the deployment verification checklist to confirm header spacing/alignment and Home page typography/spacing changes in the live build.
 
-**User-visible outcome:** A reachable VAANI testing build in the browser that loads, supports login/logout and authenticated navigation, enforces idle timeout, displays the header logo correctly, and shows no relevant console/provider errors.
+**User-visible outcome:** The site header and landing page feel cleaner and more premium, with improved spacing and typography; the Creator Zone card looks more polished, and the updated UI is available in a newly deployed build for review.

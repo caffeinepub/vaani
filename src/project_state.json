@@ -1,25 +1,42 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project (\"vaani\") with intent to publish/deploy a testing build.",
-  "architectural_notes": [],
+  "summary": "VAANI Studio web app: live in production; next work is UI polish—compact balanced header and clean, minimal Apple-style landing page refinement (spacing, alignment, typography) with no new sections.",
+  "architectural_notes": [
+    "Design direction: clean, minimal, premium Apple-style UI; prioritize whitespace and typography; no new landing page sections for now."
+  ],
   "known_issues": [],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- VAANI header wordmark/logo in SVG (vaani-logo-header.dim_240x64.svg)",
   "existing_features": [
     {
-      "id": "feature-redeploy-the-existing-vaani-project-do-not-initialize-a-new-project-to-produce-a-publicly-accessible-testing-build-retrying-deployment-if-the-previous-attempt-errored",
-      "title": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
+      "id": "feature-update-the-global-header-layout-to-feel-slightly-more-compact-and-balanced-not-cramped-with-the-vaani-logo-aligned-on-the-left-and-the-login-button-user-controls-aligned-on-the-top-right-with-consistent-breathing-room-across-breakpoints",
+      "title": "Update the global header layout to feel slightly more compact and balanced (not cramped), with the VAANI logo aligned on the left and the login button/user controls aligned on the top-right with consistent breathing room across breakpoints.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-after-redeploying-verify-the-live-testing-build-against-the-checklist-in-frontend-deployment-verification-md-initial-unauthenticated-load-login-flow-authenticated-navigation-logout-flow-idle-timeout-logo-verification-and-console-verification",
-      "title": "After redeploying, verify the live testing build against the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
+      "id": "feature-refine-the-home-landing-page-styling-to-a-clean-minimal-premium-apple-style-look-using-whitespace-and-typography-no-heavy-colors-clutter-while-keeping-the-existing-page-structure-and-content",
+      "title": "Refine the Home (landing) page styling to a clean, minimal, premium Apple-style look using whitespace and typography (no heavy colors/clutter), while keeping the existing page structure and content.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-polish-the-creator-zone-card-presentation-to-match-the-premium-minimal-direction-spacing-typography-and-visual-density-without-changing-the-submission-functionality-or-adding-new-features",
+      "title": "Polish the Creator Zone card presentation to match the premium minimal direction (spacing, typography, and visual density) without changing the submission functionality or adding new features.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-deploy-the-updated-frontend-build-for-review-and-update-the-deployment-verification-checklist-to-include-checks-relevant-to-the-header-spacing-and-landing-page-polish",
+      "title": "Deploy the updated frontend build for review and update the deployment verification checklist to include checks relevant to the header spacing and landing page polish.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -27,12 +44,19 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Publish/deploy the project \"vaani\" for testing.",
+      "summary": "Polish header spacing: make header slightly more compact and balanced; VAANI logo left, login button top-right with clean breathing room; light/modern/premium feel.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Landing page polish: clean minimal Apple-style look—refine alignment, spacing, whitespace, typography, and hierarchy while keeping current structure (no new sections).",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "vaani",
+  "gameProjectType": "none",
+  "projectName": "VAANI Studio",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

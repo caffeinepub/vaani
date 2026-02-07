@@ -1,65 +1,106 @@
 {
   "kind": "build_request",
-  "title": "Publish (redeploy) VAANI testing build",
+  "title": "Polish header spacing and refine landing page to a clean, minimal, premium Apple-style look",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
-      "target": "unknown",
+      "text": "Update the global header layout to feel slightly more compact and balanced (not cramped), with the VAANI logo aligned on the left and the login button/user controls aligned on the top-right with consistent breathing room across breakpoints.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-2",
+          "msg-1"
         ],
         "quotes": [
-          "bro lets publish this project vaani for testing"
+          "Header:\n• Make the header slightly more compact and balanced, not cramped.\n• VAANI logo on the left, login button on the top-right, with clean spacing and breathing room.",
+          "Proceed with the header spacing and landing page polish as discussed.\nPlease implement the clean, minimal, premium Apple-style look."
         ]
       },
       "acceptanceCriteria": [
-        "A new deployment is completed for the existing VAANI project (not a new canister/app).",
-        "If a deployment error occurs, the deployment is retried and completes successfully.",
-        "The deployed app is reachable in a browser as a testing build."
+        "On all common viewport widths (mobile, tablet, desktop), the header height/padding is slightly reduced compared to current, while maintaining comfortable spacing between logo and right-side controls.",
+        "Logo remains left-aligned, clickable, and navigates to `/`.",
+        "When unauthenticated, the \"Log in\" button stays visually anchored to the top-right area of the header; when authenticated, the user menu control stays in the same position.",
+        "Header maintains a light, modern look (subtle border/backdrop blur is acceptable) with no crowded elements or misalignment."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "After redeploying, verify the live testing build against the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
-      "target": "unknown",
+      "text": "Refine the Home (landing) page styling to a clean, minimal, premium Apple-style look using whitespace and typography (no heavy colors/clutter), while keeping the existing page structure and content.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-2",
+          "msg-1"
         ],
         "quotes": [
-          "bro lets publish this project vaani for testing"
+          "Landing page:\n• Minimal and elegant — no heavy colors or clutter.\n• Focus on clarity, whitespace, and typography.\n• Keep the current structure but refine alignment, spacing, and hierarchy.\nSections:\n• No new sections for now.\n• Just polish the existing layout to feel like a professional studio product, not a prototype.",
+          "Proceed with the header spacing and landing page polish as discussed."
         ]
       },
       "acceptanceCriteria": [
-        "All checklist items in `frontend/DEPLOYMENT_VERIFICATION.md` can be confirmed in the live environment.",
-        "No provider-related console errors occur (e.g., \"useAuth must be used within AuthProvider\" / \"useInternetIdentity must be used within InternetIdentityProvider\").",
-        "No broken image/asset 404 errors occur for the header logo asset."
+        "Home page keeps the same components/sections (welcome heading + Creator Zone card) without adding new sections.",
+        "Visual hierarchy is improved: heading/subheading spacing, font sizes/weights, and max-width feel intentional and premium.",
+        "Colors are restrained (primarily neutrals); any accent color usage is subtle and does not dominate the page.",
+        "Alignment and spacing are consistent (container padding, vertical rhythm, and card placement look polished)."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Polish the Creator Zone card presentation to match the premium minimal direction (spacing, typography, and visual density) without changing the submission functionality or adding new features.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Just polish the existing layout to feel like a professional studio product, not a prototype."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Creator Zone card header/content spacing is balanced and consistent with the refined landing page style.",
+        "Form controls retain current behavior (validation/toasts/submission) with no regressions.",
+        "No new fields, flows, or sections are introduced."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Deploy the updated frontend build for review and update the deployment verification checklist to include checks relevant to the header spacing and landing page polish.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Let me know once the update is deployed for review."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new deployed build is produced after UI changes.",
+        "Deployment verification documentation includes at least a brief checklist confirming header spacing/alignment and Home page spacing/typography changes are visible in the live build."
       ]
     }
   ],
   "constraints": [
-    "Do not initialize a new project; redeploy the existing VAANI web app using the current draft.",
-    "Deployment scope is limited to the existing UI-only changes already described for VAANI (no new features).",
-    "Use English for any user-facing text."
+    "Do not add new landing page sections; only refine alignment, spacing, and hierarchy of the existing structure.",
+    "Do not modify files under frontend immutable paths (e.g., `frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, `frontend/src/components/ui`). Compose existing UI components instead.",
+    "No backend changes are required for this request; avoid altering Motoko state/schema."
   ],
   "nonGoals": [
-    "Adding new backend features or changing backend data schema.",
-    "Introducing new authentication providers (only Internet Identity is supported).",
-    "Adding new pages or routes beyond what already exists for VAANI."
+    "Changing session timeout duration or auto-logout behavior.",
+    "Adding new landing page sections (features, mission, showcases) or new product flows.",
+    "Changing authentication providers or adding third-party auth."
   ],
   "imageRequirements": {
-    "required": [
-      "VAANI header wordmark/logo in SVG (vaani-logo-header.dim_240x64.svg)"
-    ],
+    "required": [],
     "edits": []
   },
   "userProfileUpdate": {
     "goalsToAdd": [],
     "goalsToRemove": [],
-    "preferencesToAdd": [],
+    "preferencesToAdd": [
+      "Clean, minimal, premium Apple-style visual design with strong whitespace/typography and restrained color usage"
+    ],
     "preferencesToRemove": [],
     "miscToAdd": [],
     "miscToRemove": [],

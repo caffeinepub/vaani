@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-redeploy-the-existing-vaani-project-do-not-initialize-a-new-project-to-produce-a-publicly-accessible-testing-build-retrying-deployment-if-the-previous-attempt-errored",
-      "featureTitle": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
+      "featureId": "feature-update-the-global-header-layout-to-feel-slightly-more-compact-and-balanced-not-cramped-with-the-vaani-logo-aligned-on-the-left-and-the-login-button-user-controls-aligned-on-the-top-right-with-consistent-breathing-room-across-breakpoints",
+      "featureTitle": "Update the global header layout to feel slightly more compact and balanced (not cramped), with the VAANI logo aligned on the left and the login button/user controls aligned on the top-right with consistent breathing room across breakpoints.",
       "files": [
-        "frontend/DEPLOYMENT_VERIFICATION.md",
-        "frontend/scripts/redeploy-testing-build.sh"
+        "frontend/src/components/Header.tsx",
+        "frontend/src/index.css"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,10 +22,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-after-redeploying-verify-the-live-testing-build-against-the-checklist-in-frontend-deployment-verification-md-initial-unauthenticated-load-login-flow-authenticated-navigation-logout-flow-idle-timeout-logo-verification-and-console-verification",
-      "featureTitle": "After redeploying, verify the live testing build against the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
+      "featureId": "feature-refine-the-home-landing-page-styling-to-a-clean-minimal-premium-apple-style-look-using-whitespace-and-typography-no-heavy-colors-clutter-while-keeping-the-existing-page-structure-and-content",
+      "featureTitle": "Refine the Home (landing) page styling to a clean, minimal, premium Apple-style look using whitespace and typography (no heavy colors/clutter), while keeping the existing page structure and content.",
       "files": [
-        "frontend/DEPLOYMENT_VERIFICATION.md"
+        "frontend/src/pages/Home.tsx",
+        "frontend/tailwind.config.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -37,6 +38,45 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-polish-the-creator-zone-card-presentation-to-match-the-premium-minimal-direction-spacing-typography-and-visual-density-without-changing-the-submission-functionality-or-adding-new-features",
+      "featureTitle": "Polish the Creator Zone card presentation to match the premium minimal direction (spacing, typography, and visual density) without changing the submission functionality or adding new features.",
+      "files": [
+        "frontend/src/components/CreatorZoneTab.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-deploy-the-updated-frontend-build-for-review-and-update-the-deployment-verification-checklist-to-include-checks-relevant-to-the-header-spacing-and-landing-page-polish",
+      "featureTitle": "Deploy the updated frontend build for review and update the deployment verification checklist to include checks relevant to the header spacing and landing page polish.",
+      "files": [
+        "frontend/DEPLOYMENT_VERIFICATION.md",
+        "frontend/scripts/redeploy-testing-build.sh"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

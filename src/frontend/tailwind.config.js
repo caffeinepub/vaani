@@ -9,7 +9,13 @@ export default {
     theme: {
         container: {
             center: true,
-            padding: '2rem',
+            padding: {
+                DEFAULT: '1rem',
+                sm: '1.5rem',
+                lg: '2rem',
+                xl: '2.5rem',
+                '2xl': '3rem',
+            },
             screens: {
                 '2xl': '1400px'
             }
@@ -73,7 +79,12 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)'
+                xs: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                sm: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+            },
+            letterSpacing: {
+                tighter: '-0.02em',
+                tight: '-0.01em',
             },
             keyframes: {
                 'accordion-down': {
@@ -90,7 +101,19 @@ export default {
                 'accordion-up': 'accordion-up 0.2s ease-out'
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
+                sans: [
+                    'Inter',
+                    '-apple-system',
+                    'BlinkMacSystemFont',
+                    '"Segoe UI"',
+                    'Roboto',
+                    '"Helvetica Neue"',
+                    'Arial',
+                    'sans-serif',
+                    '"Apple Color Emoji"',
+                    '"Segoe UI Emoji"',
+                    '"Segoe UI Symbol"'
+                ]
             }
         }
     },

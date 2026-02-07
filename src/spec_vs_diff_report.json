@@ -1,71 +1,59 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T11:06:14.930Z",
-  "summary": "The diff adds a redeploy script and updates verification documentation, but it does not provide evidence that an actual redeploy occurred or that the live deployment was verified. The diff also includes backend changes and numerous apparent frontend feature additions/changes that exceed the stated UI-only redeploy scope, and it lacks the required SVG asset file addition in the change list.",
+  "generatedAt": "2026-02-07T11:41:14.266Z",
+  "summary": "REQ-1/2/3 appear implemented via Header, Home page, and Creator Zone card styling refinements, plus global design-system/tailwind polish. REQ-4 is partially satisfied by updating deployment verification documentation and adding a redeploy script, but an actual deployed build cannot be confirmed from the diff summary alone. The diff summary also indicates several authentication/routing/admin-related changes that were not requested and conflict with the stated non-goals/constraints.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
-      "reason": "The diff only adds a shell script that could be used to deploy, but contains no evidence that a deployment was actually performed, completed, and is publicly reachable. It also does not prove it targets an existing deployment/canister (e.g., no canister IDs, no deploy output, no URL).",
+      "id": "REQ-4",
+      "requirement": "A new deployed build is produced after UI changes.",
+      "reason": "The diff includes documentation and a redeploy script, but does not provide evidence that a new build was actually deployed (only that deployment tooling/checklists were updated).",
       "evidence": [
         "frontend/scripts/redeploy-testing-build.sh",
-        "project_state.json"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "After redeploying, verify the live testing build against the checklist in frontend/DEPLOYMENT_VERIFICATION.md (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
-      "reason": "The checklist document exists/was modified, but there is no evidence in the diff of completing verification in a live environment (no recorded results, screenshots, links, or logs).",
-      "evidence": [
         "frontend/DEPLOYMENT_VERIFICATION.md"
-      ]
-    },
-    {
-      "requirement": "VAANI header wordmark/logo in SVG (vaani-logo-header.dim_240x64.svg) must be included and not 404 in the deployed build.",
-      "reason": "The verification doc references a new SVG at /assets/generated/vaani-logo-header.dim_240x64.svg, but the diff does not show the actual SVG file being added or modified, so the required asset cannot be confirmed present.",
-      "evidence": [
-        "frontend/DEPLOYMENT_VERIFICATION.md",
-        "<file-diff>: added files list does not include frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Backend functionality changes (authorization/access control, profile/audio endpoints, etc.), despite the request being UI-only and explicitly excluding backend feature/schema changes.",
-      "reason": "BuildRequest constraints/non-goals limit scope to existing UI-only changes and exclude new backend features or schema changes, but backend/main.mo was modified with substantial logic visible in the diff snippet.",
+      "description": "Routing-level access control / guards and admin redirect behavior (e.g., RouteAccessGuard, AuthHydrationGuard, redirect admins to /studio, eliminate Creator Zone flicker).",
+      "reason": "BuildRequest explicitly limits scope to UI spacing/alignment/hierarchy polish and lists non-goals around changing auth/product flows; these routing/redirect behaviors are new functional changes not requested.",
       "evidence": [
-        "backend/main.mo"
+        "frontend-file-summaries.txt (entries for frontend/src/routeTree.tsx, frontend/src/components/AuthHydrationGuard.tsx, frontend/src/pages/Studio.tsx)"
       ]
     },
     {
-      "description": "Creation/initialization of a new project state indicating a \"New project\" intent, conflicting with the requirement to redeploy an existing VAANI project.",
-      "reason": "The BuildRequest explicitly says not to initialize a new project, but project_state.json summary states: \"New project (\\\"vaani\\\") with intent to publish/deploy a testing build.\"",
+      "description": "Backend actor/auth logic change: automatic admin role assignment for a specific Principal ID and query invalidation behavior tied to actor changes.",
+      "reason": "BuildRequest says no backend changes are required and to avoid altering Motoko state/schema; while this is frontend code, it changes authorization behavior and is not part of the requested UI polish.",
       "evidence": [
-        "project_state.json"
+        "frontend-file-summaries.txt (entry for frontend/src/hooks/useActor.ts)"
       ]
     },
     {
-      "description": "Large set of new/expanded frontend features and behavior changes (route guards, admin panels, role-based redirects, hydration guards, etc.) beyond a simple redeploy of existing UI-only changes.",
-      "reason": "Deployment scope is limited to existing UI-only changes already described for VAANI (no new features) and no new pages/routes beyond what already exists, but frontend-file-summaries.txt describes many components/behaviors that read as feature development (e.g., AdminPanel, RouteAccessGuard, AuthHydrationGuard, automatic admin role assignment).",
+      "description": "New hydration hard-exit timeout behavior and related context/state management.",
+      "reason": "Not requested; also risks impacting session/login behavior (explicitly a non-goal to change session timeout/auto-logout behavior).",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend-file-summaries.txt (entry for frontend/src/contexts/HydrationHardExitContext.tsx)"
       ]
     },
     {
-      "description": "Non-English/emoji user-facing output in redeploy script.",
-      "reason": "Constraints require English for any user-facing text. The script prints emoji-prefixed status messages (e.g., 🚀, 📦, 🌐).",
+      "description": "Expanded/altered authentication flow verification scope and additional functional expectations (profile setup modal, admin features, cached data clearing) beyond header/landing spacing polish.",
+      "reason": "REQ-4 only asks to update the verification checklist to include checks relevant to header spacing and landing page polish; the checklist includes many additional auth/admin functional checks not requested by the BuildRequest.",
       "evidence": [
-        "frontend/scripts/redeploy-testing-build.sh"
+        "frontend/DEPLOYMENT_VERIFICATION.md (sections: Authentication Flow, Admin-Specific Features, etc.)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.68,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/DEPLOYMENT_VERIFICATION.md",
     "frontend/scripts/redeploy-testing-build.sh",
+    "frontend/src/components/CreatorZoneTab.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/index.css",
+    "frontend/src/pages/Home.tsx",
+    "frontend/tailwind.config.js",
     "project_state.json"
   ]
 }

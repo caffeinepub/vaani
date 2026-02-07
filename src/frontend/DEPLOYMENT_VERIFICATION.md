@@ -1,118 +1,87 @@
-# Deployment Verification Checklist
+# VAANI Deployment Verification Checklist
 
-## Provider Hierarchy Verification
+## Version 40 - Premium Apple-Style Header & Landing Page Polish
 
-The application now uses the following provider hierarchy (outermost to innermost):
+### Visual Changes Summary
+This build implements a clean, minimal, premium Apple-style aesthetic:
+- **Header**: More compact (h-14 vs h-16), refined spacing, lighter backdrop blur, smaller logo (h-8 vs h-12), tighter button sizing
+- **Landing Page**: Improved typography hierarchy, increased vertical spacing (py-16/20 vs py-8), better whitespace rhythm
+- **Creator Zone Card**: Polished spacing, refined form controls, subtle border/background treatments
+- **Design System**: Reduced border radius (0.5rem vs 0.75rem), improved font rendering, tighter letter spacing
 
-1. **QueryClientProvider** (React Query state management)
-2. **AuthProvider** (exported from AuthContext.tsx)
-   - Internally renders **InternetIdentityProvider**
-   - Then renders **AuthProviderInternal** (consumes useInternetIdentity)
-3. **RouterProvider** (TanStack Router with routeTree)
-   - Root layout with Header, Outlet, Footer
-   - All routes (/, /studio)
+### Pre-Deployment Checklist
+- [ ] Backend canister is running and healthy
+- [ ] Frontend build completes without errors
+- [ ] All TypeScript type checks pass
+- [ ] No console errors in development mode
 
-This ensures:
-- `useAuth()` is never called outside AuthContext provider
-- `useInternetIdentity()` is never called outside InternetIdentityProvider
-- All components (Header, CreatorZoneTab, CreatorZoneAuthControls, routes) are safely wrapped
+### Post-Deployment Verification
 
-## UI-Only Changes (Latest Deployment)
+#### 1. Header Spacing & Alignment (All Breakpoints)
+- [ ] **Mobile (< 768px)**
+  - [ ] Header height is compact (56px / h-14) with balanced spacing
+  - [ ] Logo is left-aligned, clickable, and navigates to `/`
+  - [ ] Logo size is appropriate (h-8 / 32px height)
+  - [ ] "Log in" button is anchored to top-right when unauthenticated
+  - [ ] User menu icon is anchored to top-right when authenticated
+  - [ ] No crowding or misalignment between logo and controls
+  
+- [ ] **Tablet (768px - 1024px)**
+  - [ ] Header maintains compact height with comfortable breathing room
+  - [ ] Logo and auth controls are properly spaced
+  - [ ] Studio button (if admin) appears with proper spacing
+  
+- [ ] **Desktop (> 1024px)**
+  - [ ] Header feels light, modern, and premium
+  - [ ] All elements maintain consistent alignment
+  - [ ] Backdrop blur effect is subtle and refined
 
-✅ **Header SVG Logo Update:**
-- Header now uses SVG asset at `/assets/generated/vaani-logo-header.dim_240x64.svg`
-- Logo is crisp and scalable at all screen resolutions
-- Logo remains clickable and navigates to `/`
+#### 2. Landing Page Typography & Whitespace
+- [ ] Welcome heading uses refined typography (text-4xl/5xl, font-semibold, tracking-tight)
+- [ ] Subheading has appropriate muted color and spacing
+- [ ] Vertical rhythm between heading and Creator Zone card feels intentional (space-y-12)
+- [ ] Container max-width (max-w-3xl) creates focused, premium layout
+- [ ] Padding is generous (py-16 on mobile, py-20 on desktop)
 
-✅ **Duplicate Body Logo Removal:**
-- Removed VAANI logo image from CreatorZoneAuthControls when logged out
-- Branding is now only shown in the global header
+#### 3. Creator Zone Card Polish
+- [ ] Card header spacing is balanced (pb-5)
+- [ ] Form labels use refined typography (text-sm font-medium)
+- [ ] Input fields have consistent height (h-10)
+- [ ] Premium toggle section has subtle background (bg-muted/30)
+- [ ] Submit button maintains proper sizing (h-10)
+- [ ] "Coming soon" section has refined styling with subtle borders
 
-✅ **Login Button Position Update:**
-- When unauthenticated, header shows "Log in" button in top-right nav area
-- Clicking "Log in" triggers existing Internet Identity flow
-- When authenticated, header continues to show user dropdown with logout controls
+#### 4. Authentication Flow
+- [ ] Unauthenticated state shows "Log in" button in top-right
+- [ ] Login flow works correctly (Internet Identity)
+- [ ] After login, user menu appears in same top-right position
+- [ ] Profile setup modal appears for first-time users
+- [ ] Admin users see Studio navigation button after profile setup
+- [ ] Logout clears all cached data and returns to home
 
-## Source File Modification Confirmation
+#### 5. Admin-Specific Features (if applicable)
+- [ ] Studio button appears in header for admin users
+- [ ] Studio button has proper active state styling
+- [ ] Studio page is accessible and loads correctly
+- [ ] Admin panel displays pending submissions and user management
 
-✅ **Only source files under `frontend/src/**` were modified:**
-- `frontend/src/components/Header.tsx` (updated logo to SVG, added top-right login button)
-- `frontend/src/components/CreatorZoneAuthControls.tsx` (removed duplicate body logo)
-- `frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg` (new SVG asset)
-- `frontend/DEPLOYMENT_VERIFICATION.md` (this file)
+#### 6. Cross-Browser Testing
+- [ ] Chrome/Edge: All features work, styling is correct
+- [ ] Firefox: All features work, styling is correct
+- [ ] Safari: All features work, backdrop blur renders correctly
+- [ ] Mobile browsers: Touch interactions work, layout is responsive
 
-❌ **No compiled/generated artifacts were edited** (e.g., no changes to `dist/`, `node_modules/`, or generated bindings)
+#### 7. Dark Mode
+- [ ] Header maintains premium look in dark mode
+- [ ] Landing page typography is readable in dark mode
+- [ ] Creator Zone card styling works in dark mode
+- [ ] All borders and backgrounds have appropriate contrast
 
-## Deployment Test Script
+#### 8. Performance & Polish
+- [ ] Page loads quickly without layout shifts
+- [ ] Logo image loads correctly (PNG with 2x srcset)
+- [ ] Hover states are smooth and responsive
+- [ ] Transitions feel polished (200ms duration)
+- [ ] Font rendering is crisp with antialiasing
 
-After deploying, verify the following in the live environment:
-
-### 1. Initial Load (Unauthenticated)
-- [ ] Navigate to `/` → Home page renders without blank screen
-- [ ] Navigate to `/studio` → Redirects to `/` (admin-only protection)
-- [ ] Console is clean (no "useAuth must be used within AuthProvider" error)
-- [ ] Header renders with SVG logo at `/assets/generated/vaani-logo-header.dim_240x64.svg` (no 404)
-- [ ] Header shows "Log in" button in top-right position
-- [ ] No duplicate VAANI logo appears in the page body
-
-### 2. Login Flow
-- [ ] Click "Log in" in header → Internet Identity modal opens
-- [ ] Complete authentication → UI updates to authenticated state
-- [ ] If admin: automatically redirected to `/studio`
-- [ ] If non-admin: stays on current page
-- [ ] Header shows user dropdown with "Log out" option
-- [ ] "Log in" button is replaced by user dropdown
-
-### 3. Navigation (Authenticated)
-- [ ] Navigate between `/` and `/studio` (if admin) → No crashes
-- [ ] CreatorZoneTab renders without errors
-- [ ] CreatorZoneAuthControls displays "Log out" button (no logo)
-- [ ] All components using `useAuth()` work correctly
-
-### 4. Logout Flow
-- [ ] Click "Log out" → User is logged out
-- [ ] Redirected to `/` (home page)
-- [ ] React Query cache is cleared
-- [ ] Header shows "Log in" button again in top-right
-- [ ] No blank screen during transition
-
-### 5. Idle Timeout (5 minutes)
-- [ ] Remain inactive for 5 minutes while authenticated
-- [ ] User is automatically logged out
-- [ ] Inline alert appears in Creator Zone: "You were logged out due to inactivity"
-- [ ] Alert is dismissible
-- [ ] No console errors during auto-logout
-
-### 6. Logo Verification
-- [ ] Header logo loads from SVG asset (inspect network tab for `/assets/generated/vaani-logo-header.dim_240x64.svg`)
-- [ ] Logo is crisp on high-DPI displays (Retina, 4K)
-- [ ] Logo preserves aspect ratio (no stretching/cropping)
-- [ ] Logo is clickable and navigates to `/`
-- [ ] No duplicate logo appears in body when logged out
-- [ ] No 404 errors for logo asset in console
-
-### 7. Console Verification
-- [ ] Open browser DevTools console
-- [ ] Perform all above actions
-- [ ] Confirm: **Zero** "useAuth must be used within AuthProvider" errors
-- [ ] Confirm: **Zero** "useInternetIdentity must be used within InternetIdentityProvider" errors
-- [ ] Confirm: No React hydration warnings or provider-related errors
-- [ ] Confirm: No broken image/asset 404 errors (especially for `/assets/generated/vaani-logo-header.dim_240x64.svg`)
-
-## Expected Behavior Summary
-
-✅ **Login works** → Internet Identity authentication completes, UI updates  
-✅ **Logout works** → User logged out, cache cleared, redirected to `/`  
-✅ **No blank screen** → All routes render correctly during auth transitions  
-✅ **Creator Zone renders safely** → No crashes in CreatorZoneTab or CreatorZoneAuthControls  
-✅ **Admin redirect works** → Admins redirected to `/studio` after login (once admin status resolves)  
-✅ **Idle timeout works** → Auto-logout after 5 minutes, banner displays without errors  
-✅ **SVG logo renders** → Header logo is crisp and scalable at all resolutions (no 404)  
-✅ **No duplicate logo** → Body section does not show VAANI logo when logged out  
-✅ **Login button visible** → Top-right header shows "Log in" when unauthenticated  
-
-## Rebuild & Redeploy Commands
-
-### Quick Redeploy (Recommended)
-Use the automated redeploy script with built-in retry logic:
-
+### Testing Script
