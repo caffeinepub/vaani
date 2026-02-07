@@ -1,15 +1,20 @@
 import { createRootRoute, createRoute, Outlet } from '@tanstack/react-router';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import App from './App';
+import RouteAccessGuard from './components/RouteAccessGuard';
+import TestingModeBanner from './components/TestingModeBanner';
+import Home from './pages/Home';
 import Studio from './pages/Studio';
 
 const rootRoute = createRootRoute({
   component: () => (
     <div className="min-h-screen flex flex-col bg-background">
+      <TestingModeBanner />
       <Header />
       <main className="flex-1">
-        <Outlet />
+        <RouteAccessGuard>
+          <Outlet />
+        </RouteAccessGuard>
       </main>
       <Footer />
     </div>
@@ -19,7 +24,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: App,
+  component: Home,
 });
 
 const studioRoute = createRoute({

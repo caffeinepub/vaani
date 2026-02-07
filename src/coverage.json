@@ -1,65 +1,38 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T04:11:30.352Z",
+  "generatedAt": "2026-02-07T11:06:14.933Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 4,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Refactor the auth provider setup so a real `AuthProvider` wraps the entire app/router tree, and the `AuthProvider` component is above `InternetIdentityProvider` in the rendered hierarchy while still allowing AuthContext to use Internet Identity state internally (e.g., by making `AuthProvider` an outer wrapper that renders `InternetIdentityProvider` and an internal provider that uses `useInternetIdentity`).",
+        "summary": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
+          "frontend/scripts/redeploy-testing-build.sh",
+          "frontend/DEPLOYMENT_VERIFICATION.md"
         ],
         "matchedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
+          "frontend/scripts/redeploy-testing-build.sh",
+          "frontend/DEPLOYMENT_VERIFICATION.md"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Update the application root composition (in `frontend/src/main.tsx` or the root entry component it renders) so that `RouterProvider`, `Header`, `CreatorZoneTab`, and all routes are rendered inside the `AuthProvider` boundary (ensuring the router tree is fully wrapped).",
-        "status": "missing",
-        "plannedFiles": [
-          "frontend/src/main.tsx"
-        ],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Preserve and validate existing auth behaviors after provider hierarchy changes: login, logout, admin redirect to `/studio`, query-cache clearing on logout, and idle timeout auto-logout banner behavior in Creator Zone.",
+        "summary": "After redeploying, verify the live testing build against the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/contexts/AuthContext.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Do not modify compiled/built artifacts; apply the fix only in source TypeScript/TSX files (e.g., under `frontend/src/**`).",
-        "status": "implemented",
-        "plannedFiles": [
+          "frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg",
           "frontend/DEPLOYMENT_VERIFICATION.md"
         ],
         "matchedFiles": [
-          "frontend/DEPLOYMENT_VERIFICATION.md"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Redeploy after applying the fix and verify using the checks described in `frontend/DEPLOYMENT_VERIFICATION.md` (initial load, login, logout, navigation, idle timeout, and console error-free operation).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/DEPLOYMENT_VERIFICATION.md"
-        ],
-        "matchedFiles": [
+          "frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg",
           "frontend/DEPLOYMENT_VERIFICATION.md"
         ]
       }
@@ -72,7 +45,8 @@
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/DEPLOYMENT_VERIFICATION.md",
-    "frontend/src/contexts/AuthContext.tsx",
+    "frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg",
+    "frontend/scripts/redeploy-testing-build.sh",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,23 +1,13 @@
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import AdminPanel from '../components/AdminPanel';
 import FullScreenLoading from '../components/FullScreenLoading';
 
 export default function Studio() {
-  const { identity } = useInternetIdentity();
   const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
-
-  const isAuthenticated = !!identity;
-  const isAdmin = userProfile?.role === 'admin';
 
   // Show loading while profile resolves
   if (profileLoading) {
     return <FullScreenLoading message="Loading Studio..." />;
-  }
-
-  // Show loading if unauthorized (watcher will redirect)
-  if (!isAuthenticated || !isAdmin) {
-    return <FullScreenLoading message="Redirecting..." />;
   }
 
   return (
@@ -30,11 +20,6 @@ export default function Studio() {
           <p className="text-muted-foreground">
             Admin dashboard for managing submissions and users
           </p>
-          {identity && (
-            <p className="text-xs text-muted-foreground font-mono">
-              Principal: {identity.getPrincipal().toString()}
-            </p>
-          )}
         </div>
         <AdminPanel />
       </div>

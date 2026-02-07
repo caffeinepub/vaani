@@ -1,61 +1,38 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [
-    "AuthProvider must wrap the entire application (RouterProvider, Header, CreatorZoneTab, and all routes) to support useAuth() calls.",
-    "AuthProvider must be placed above InternetIdentityProvider in the provider tree.",
-    "Do not modify compiled files; apply fixes in source only (no try/catch or conditional useAuth workarounds)."
-  ],
-  "known_issues": [
-    "AuthProvider is not wrapping the router tree; components calling useAuth() (CreatorZoneAuthControls, CreatorZoneTab) can cause a blank screen and break login/logout."
-  ],
-  "isFixRequest": true,
+  "summary": "New project (\"vaani\") with intent to publish/deploy a testing build.",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- VAANI header wordmark/logo in SVG (vaani-logo-header.dim_240x64.svg)",
   "existing_features": [
     {
-      "id": "feature-refactor-the-auth-provider-setup-so-a-real-authprovider-wraps-the-entire-app-router-tree-and-the-authprovider-component-is-above-internetidentityprovider-in-the-rendered-hierarchy-while-still-allowing-authcontext-to-use-internet-identity-state-internally-e-g-by-making-authprovider-an-outer-wrapper-that-renders-internetidentityprovider-and-an-internal-provider-that-uses-useinternetidentity",
-      "title": "Refactor the auth provider setup so a real `AuthProvider` wraps the entire app/router tree, and the `AuthProvider` component is above `InternetIdentityProvider` in the rendered hierarchy while still allowing AuthContext to use Internet Identity state internally (e.g., by making `AuthProvider` an outer wrapper that renders `InternetIdentityProvider` and an internal provider that uses `useInternetIdentity`).",
+      "id": "feature-redeploy-the-existing-vaani-project-do-not-initialize-a-new-project-to-produce-a-publicly-accessible-testing-build-retrying-deployment-if-the-previous-attempt-errored",
+      "title": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-preserve-and-validate-existing-auth-behaviors-after-provider-hierarchy-changes-login-logout-admin-redirect-to-studio-query-cache-clearing-on-logout-and-idle-timeout-auto-logout-banner-behavior-in-creator-zone",
-      "title": "Preserve and validate existing auth behaviors after provider hierarchy changes: login, logout, admin redirect to `/studio`, query-cache clearing on logout, and idle timeout auto-logout banner behavior in Creator Zone.",
+      "id": "feature-after-redeploying-verify-the-live-testing-build-against-the-checklist-in-frontend-deployment-verification-md-initial-unauthenticated-load-login-flow-authenticated-navigation-logout-flow-idle-timeout-logo-verification-and-console-verification",
+      "title": "After redeploying, verify the live testing build against the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
       "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-do-not-modify-compiled-built-artifacts-apply-the-fix-only-in-source-typescript-tsx-files-e-g-under-frontend-src",
-      "title": "Do not modify compiled/built artifacts; apply the fix only in source TypeScript/TSX files (e.g., under `frontend/src/**`).",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-redeploy-after-applying-the-fix-and-verify-using-the-checks-described-in-frontend-deployment-verification-md-initial-load-login-logout-navigation-idle-timeout-and-console-error-free-operation",
-      "title": "Redeploy after applying the fix and verify using the checks described in `frontend/DEPLOYMENT_VERIFICATION.md` (initial load, login, logout, navigation, idle timeout, and console error-free operation).",
-      "reqIds": [
-        "REQ-5"
+        "REQ-2"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-2",
-      "summary": "Update the application root composition (in `frontend/src/main.tsx` or the root entry component it renders) so that `RouterProvider`, `Header`, `CreatorZoneTab`, and all routes are rendered inside the `AuthProvider` boundary (ensuring the router tree is fully wrapped).",
-      "reqIds": [
-        "REQ-2"
-      ],
+      "id": "AR-1",
+      "summary": "Publish/deploy the project \"vaani\" for testing.",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Fix AuthProvider placement so useAuth is always within provider (no blank screen)",
+  "projectName": "vaani",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

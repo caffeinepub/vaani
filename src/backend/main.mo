@@ -9,10 +9,18 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
 // Specify migration strategy during upgrade
-
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+
+  let studioAdmins = Map.empty<Principal, Bool>();
+
+  func isStudioAdmin(caller : Principal) : Bool {
+    switch (studioAdmins.get(caller)) {
+      case (?isAdmin) { isAdmin };
+      case (null) { false };
+    };
+  };
 
   public type Profile = {
     principal : Principal;
@@ -58,7 +66,7 @@ actor {
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?Profile {
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+    if (caller != user and not (isStudioAdmin(caller) or AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Can only view your own profile");
     };
     profiles.get(user);
@@ -80,7 +88,7 @@ actor {
   };
 
   public query ({ caller }) func getProfileByPrincipal(principal : Principal) : async Profile {
-    if (caller != principal and not AccessControl.isAdmin(accessControlState, caller)) {
+    if (caller != principal and not (isStudioAdmin(caller) or AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Can only view your own profile");
     };
 
@@ -125,7 +133,7 @@ actor {
   };
 
   public query ({ caller }) func getPendingSubmissions() : async [AudioMetadata] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not (isStudioAdmin(caller) or AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view pending submissions");
     };
 
@@ -134,7 +142,7 @@ actor {
   };
 
   public shared ({ caller }) func approveSubmission(submissionId : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not (isStudioAdmin(caller) or AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can approve submissions");
     };
 
@@ -152,7 +160,7 @@ actor {
   };
 
   public shared ({ caller }) func rejectSubmission(submissionId : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not (isStudioAdmin(caller) or AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can reject submissions");
     };
 

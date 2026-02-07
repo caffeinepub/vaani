@@ -1,111 +1,69 @@
 {
   "kind": "build_request",
-  "title": "Fix AuthProvider placement so useAuth is always within provider (no blank screen)",
-  "priority": "high",
+  "title": "Publish (redeploy) VAANI testing build",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Refactor the auth provider setup so a real `AuthProvider` wraps the entire app/router tree, and the `AuthProvider` component is above `InternetIdentityProvider` in the rendered hierarchy while still allowing AuthContext to use Internet Identity state internally (e.g., by making `AuthProvider` an outer wrapper that renders `InternetIdentityProvider` and an internal provider that uses `useInternetIdentity`).",
-      "target": "frontend",
+      "text": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-2"
+          "msg-4"
         ],
         "quotes": [
-          "CreatorZoneAuthControls and CreatorZoneTab call useAuth(), but AuthProvider is NOT wrapping the router tree.",
-          "AuthProvider must be ABOVE InternetIdentityProvider"
+          "bro lets publish this project vaani for testing"
         ]
       },
       "acceptanceCriteria": [
-        "`useAuth` is never invoked outside of an active AuthContext provider during any route render.",
-        "The exported/used `AuthProvider` component is mounted above `InternetIdentityProvider` in the React tree.",
-        "No try/catch wrappers or conditional `useAuth()` calls are introduced anywhere."
+        "A new deployment is completed for the existing VAANI project (not a new canister/app).",
+        "If a deployment error occurs, the deployment is retried and completes successfully.",
+        "The deployed app is reachable in a browser as a testing build."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the application root composition (in `frontend/src/main.tsx` or the root entry component it renders) so that `RouterProvider`, `Header`, `CreatorZoneTab`, and all routes are rendered inside the `AuthProvider` boundary (ensuring the router tree is fully wrapped).",
-      "target": "frontend",
+      "text": "After redeploying, verify the live testing build against the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-2"
+          "msg-4"
         ],
         "quotes": [
-          "Wrap the entire application with AuthProvider",
-          "Ensure RouterProvider, CreatorZoneTab, Header, and all routes are rendered inside AuthProvider"
+          "bro lets publish this project vaani for testing"
         ]
       },
       "acceptanceCriteria": [
-        "All route renders (including `/` and `/studio`) occur under `AuthProvider` (no `useAuth must be used within AuthProvider` runtime error).",
-        "Unauthenticated initial load shows the home route without a blank/white screen.",
-        "`Header` and `CreatorZoneTab` render without crashing on every route."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Preserve and validate existing auth behaviors after provider hierarchy changes: login, logout, admin redirect to `/studio`, query-cache clearing on logout, and idle timeout auto-logout banner behavior in Creator Zone.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-2"
-        ],
-        "quotes": [
-          "After fix: • Login works • Logout works • No blank screen • Creator Zone renders safely"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Clicking \"Log in\" completes Internet Identity authentication and the UI updates to the authenticated state.",
-        "Clicking \"Log out\" logs the user out, returns to `/`, and clears cached identity-scoped data as before.",
-        "Admin users are redirected to `/studio` after login (once admin status is resolved).",
-        "Idle timeout (5 minutes) logs the user out and displays the existing inactivity alert in Creator Zone without console errors."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Do not modify compiled/built artifacts; apply the fix only in source TypeScript/TSX files (e.g., under `frontend/src/**`).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-2"
-        ],
-        "quotes": [
-          "Do NOT edit compiled files"
-        ]
-      },
-      "acceptanceCriteria": [
-        "No changes are made to generated/compiled output files; only source files are modified."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Redeploy after applying the fix and verify using the checks described in `frontend/DEPLOYMENT_VERIFICATION.md` (initial load, login, logout, navigation, idle timeout, and console error-free operation).",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-2"
-        ],
-        "quotes": [
-          "Proceed and redeploy."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Deployed app passes the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` without the `useAuth must be used within AuthProvider` error and without any blank screen during navigation/auth transitions."
+        "All checklist items in `frontend/DEPLOYMENT_VERIFICATION.md` can be confirmed in the live environment.",
+        "No provider-related console errors occur (e.g., \"useAuth must be used within AuthProvider\" / \"useInternetIdentity must be used within InternetIdentityProvider\").",
+        "No broken image/asset 404 errors occur for the header logo asset."
       ]
     }
   ],
   "constraints": [
-    "Do not add try/catch or conditional `useAuth()` calls to avoid the error; fix provider hierarchy instead.",
-    "Do not edit `frontend/src/hooks/useInternetIdentity.ts` or `frontend/src/hooks/useInternetIdentity.tsx` (immutable paths).",
-    "Do not edit compiled/generated build artifacts; modify source only.",
-    "Backend remains single-actor; no additional backend services."
+    "Do not initialize a new project; redeploy the existing VAANI web app using the current draft.",
+    "Deployment scope is limited to the existing UI-only changes already described for VAANI (no new features).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Changing authentication method away from Internet Identity.",
-    "Adding new routes, features, or redesigning the UI beyond what is required to fix the provider hierarchy and prevent crashes.",
-    "Backend schema or Motoko logic changes unrelated to auth provider wrapping."
+    "Adding new backend features or changing backend data schema.",
+    "Introducing new authentication providers (only Internet Identity is supported).",
+    "Adding new pages or routes beyond what already exists for VAANI."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "VAANI header wordmark/logo in SVG (vaani-logo-header.dim_240x64.svg)"
+    ],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

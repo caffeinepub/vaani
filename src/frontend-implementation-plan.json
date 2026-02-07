@@ -1,82 +1,47 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Refactor AuthProvider hierarchy to wrap router tree and prevent useAuth crashes",
+  "title": "VAANI testing build redeploy & verification (frontend-only)",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Refactor AuthProvider so it wraps the entire app while rendering InternetIdentityProvider internally, keeping AuthContext logic able to consume Internet Identity state safely.",
+      "summary": "Add repeatable redeploy workflow for the existing VAANI testing build (no new project) with a safe retry path on failure.",
       "acceptanceCriteria": [
-        "`useAuth` is never invoked outside of an active AuthContext provider during any route render.",
-        "The exported/used `AuthProvider` component is mounted above `InternetIdentityProvider` in the React tree.",
-        "No try/catch wrappers or conditional `useAuth()` calls are introduced anywhere."
+        "A new deployment is completed for the existing VAANI project (not a new canister/app).",
+        "If a deployment error occurs, the deployment is retried and completes successfully.",
+        "The deployed app is reachable in a browser as a testing build."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/contexts/AuthContext.tsx",
+          "path": "frontend/scripts/redeploy-testing-build.sh",
+          "operation": "create",
+          "description": "Create a redeploy helper script that runs the existing deploy command(s) for the current VAANI project and includes a simple retry-on-failure flow (re-run deploy after an error). Keep it non-destructive (no project initialization) and focused on redeploying the current draft."
+        },
+        {
+          "path": "frontend/DEPLOYMENT_VERIFICATION.md",
           "operation": "modify",
-          "description": "Refactor to export an outer `AuthProvider` wrapper that mounts `InternetIdentityProvider` internally, and move the existing context logic into an internal provider component that calls `useInternetIdentity`. Ensure the exported `useAuth` continues to throw when used outside provider (no conditional usage). Verify the component's usage instructions before implementing."
+          "description": "Fill in the currently-empty 'Rebuild & Redeploy Commands' section with the exact commands used to redeploy the existing VAANI project and how to retry safely if the previous attempt errors, without initializing a new project."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Update root composition so the entire router tree (including Header, CreatorZoneTab, and all routes) is rendered inside AuthProvider.",
+      "summary": "Update verification checklist to match the current provider hierarchy and ensure the header logo asset is present to avoid console/provider errors and asset 404s in the live testing build.",
       "acceptanceCriteria": [
-        "All route renders (including `/` and `/studio`) occur under `AuthProvider` (no `useAuth must be used within AuthProvider` runtime error).",
-        "Unauthenticated initial load shows the home route without a blank/white screen.",
-        "`Header` and `CreatorZoneTab` render without crashing on every route."
+        "All checklist items in `frontend/DEPLOYMENT_VERIFICATION.md` can be confirmed in the live environment.",
+        "No provider-related console errors occur (e.g., \"useAuth must be used within AuthProvider\" / \"useInternetIdentity must be used within InternetIdentityProvider\").",
+        "No broken image/asset 404 errors occur for the header logo asset."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/main.tsx",
-          "operation": "modify",
-          "description": "Replace direct `App` render with TanStack `RouterProvider` using the existing `router`, and wrap `RouterProvider` (and therefore all routes including root layout Header/Footer) inside the exported `AuthProvider`. Remove the top-level `InternetIdentityProvider` usage here since it is now mounted inside `AuthProvider`. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Preserve current auth behaviors after provider hierarchy changes (login/logout, admin redirect to /studio, query cache clearing on logout, and idle-timeout auto-logout banner).",
-      "acceptanceCriteria": [
-        "Clicking \"Log in\" completes Internet Identity authentication and the UI updates to the authenticated state.",
-        "Clicking \"Log out\" logs the user out, returns to `/`, and clears cached identity-scoped data as before.",
-        "Admin users are redirected to `/studio` after login (once admin status is resolved).",
-        "Idle timeout (5 minutes) logs the user out and displays the existing inactivity alert in Creator Zone without console errors."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/contexts/AuthContext.tsx",
-          "operation": "modify",
-          "description": "Adjust auth transition logic to ensure the admin redirect to `/studio` still happens after login even if admin status resolves after identity is set (e.g., track a one-time post-login redirect eligibility per principal). Keep logout behavior to clear React Query cache and navigate to `/`, and keep idle timeout auto-logout reason state used by Creator Zone banner. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Ensure the fix is applied only in source TS/TSX files under frontend/src/** and not in any compiled artifacts.",
-      "acceptanceCriteria": [
-        "No changes are made to generated/compiled output files; only source files are modified."
-      ],
-      "file_operations": [
+          "path": "frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg",
+          "operation": "create",
+          "description": "Add the required generated header wordmark asset at the exact path `frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg` so the live build does not 404 when loading the header logo."
+        },
         {
           "path": "frontend/DEPLOYMENT_VERIFICATION.md",
           "operation": "modify",
-          "description": "Add/adjust verification notes to explicitly confirm that only `frontend/src/**` source files were modified for this change and no compiled artifacts were edited."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Update verification guidance to reflect the new root/provider wiring and ensure redeploy verification steps are followed.",
-      "acceptanceCriteria": [
-        "Deployed app passes the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` without the `useAuth must be used within AuthProvider` error and without any blank screen during navigation/auth transitions."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/DEPLOYMENT_VERIFICATION.md",
-          "operation": "modify",
-          "description": "Update the \"Provider Hierarchy Verification\" section to match the new composition (AuthProvider wrapping RouterProvider and rendering InternetIdentityProvider internally), and keep the existing checklist items for initial load, login, logout, navigation, idle timeout, and console-clean operation."
+          "description": "Align the 'Provider Hierarchy Verification' section with the actual app wrapper order (as implemented in `frontend/src/main.tsx` and `frontend/src/App.tsx`), and ensure the checklist explicitly validates that `frontend/public/assets/generated/vaani-logo-header.dim_240x64.svg` is served without 404 and that provider-related console errors do not occur."
         }
       ]
     }

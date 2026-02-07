@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the React provider hierarchy so `useAuth()` is always executed within an active `AuthProvider`, preventing blank/white screens and runtime crashes during route renders.
+**Goal:** Redeploy the existing VAANI project to produce a publicly accessible testing build and verify it passes the deployment verification checklist.
 
 **Planned changes:**
-- Refactor the auth provider setup so the exported/used `AuthProvider` wraps the entire app/router tree and is mounted above `InternetIdentityProvider`, while still allowing AuthContext to consume Internet Identity state internally (without changing `useInternetIdentity`).
-- Update the application root composition (`frontend/src/main.tsx` or its entry component) so `RouterProvider`, `Header`, `CreatorZoneTab`, and all routes render inside the `AuthProvider` boundary.
-- Validate that existing auth behaviors remain intact after the hierarchy change: login, logout, admin redirect to `/studio`, query-cache clearing on logout, and 5-minute idle timeout auto-logout banner behavior in Creator Zone.
-- Apply changes only to source TS/TSX files under `frontend/src/**` (no compiled/generated artifact edits) and redeploy, verifying via `frontend/DEPLOYMENT_VERIFICATION.md`.
+- Redeploy the current VAANI project (no new project/canister) to create a new public testing build, retrying if a deployment attempt errors.
+- Verify the live deployment against `frontend/DEPLOYMENT_VERIFICATION.md` (unauthenticated load, login, authenticated navigation, logout, idle timeout, logo rendering, and console checks).
+- Confirm no provider-related console errors and no broken/404 logo asset requests in the live build.
 
-**User-visible outcome:** The app loads reliably (including when unauthenticated) without blank screens; `Header` and `CreatorZoneTab` render safely on every route; login/logout flows, admin redirect, cache clearing, and idle timeout behavior work as before with no `useAuth must be used within AuthProvider` errors.
+**User-visible outcome:** A reachable VAANI testing build in the browser that loads, supports login/logout and authenticated navigation, enforces idle timeout, displays the header logo correctly, and shows no relevant console/provider errors.

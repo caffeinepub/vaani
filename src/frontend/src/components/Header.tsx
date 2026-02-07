@@ -1,6 +1,6 @@
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2, LogOut, User, Shield } from 'lucide-react';
+import { Loader2, LogOut, User, Shield, LogIn } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ export default function Header() {
   const routerState = useRouterState();
   const previousIdentityRef = useRef<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const { logout } = useAuth(); // Requires AuthProvider
+  const { login, logout } = useAuth(); // Requires AuthProvider
 
   const isAuthenticated = !!identity;
   const currentPrincipalId = identity?.getPrincipal().toString();
@@ -82,14 +82,18 @@ export default function Header() {
   const showStudioNav = isMounted && isAuthenticated && profileFetched && !profileLoading && isAdmin;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between px-4">
+    <header className="sticky top-10 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between px-6 md:px-8">
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleNavigate('/')}
-            className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity"
+            className="hover:opacity-80 transition-opacity"
           >
-            <span className="text-primary">VAANI</span>
+            <img 
+              src="/assets/generated/vaani-logo-header.dim_240x64.svg" 
+              alt="VAANI" 
+              className="h-12 w-auto object-contain"
+            />
           </button>
         </div>
 
@@ -140,7 +144,12 @@ export default function Header() {
             </DropdownMenu>
           ) : isLoggingIn ? (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          ) : null}
+          ) : (
+            <Button variant="default" size="sm" onClick={login} className="gap-2">
+              <LogIn className="h-4 w-4" />
+              Log in
+            </Button>
+          )}
         </nav>
       </div>
     </header>

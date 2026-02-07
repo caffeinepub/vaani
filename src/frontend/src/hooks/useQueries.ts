@@ -68,17 +68,25 @@ export function useIsCallerAdmin() {
   const { actor, isFetching: actorFetching } = useActor();
   const { identity } = useInternetIdentity();
   const principalId = identity?.getPrincipal().toString();
+  const isAuthenticated = !!identity && !identity.getPrincipal().isAnonymous();
 
-  return useQuery<boolean>({
+  const query = useQuery<boolean>({
     queryKey: ['isCallerAdmin', principalId],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.isCallerAdmin();
     },
-    enabled: !!actor && !actorFetching && !!principalId,
+    enabled: !!actor && !actorFetching && !!principalId && isAuthenticated,
     staleTime: 0,
     refetchOnMount: 'always',
   });
+
+  return {
+    ...query,
+    // Expose resolution state for routing decisions
+    isLoading: (actorFetching || query.isLoading) && isAuthenticated,
+    isResolved: isAuthenticated ? (!!actor && !!principalId && (query.isFetched || query.isSuccess)) : true,
+  };
 }
 
 export function useGetAllArtistProfiles() {

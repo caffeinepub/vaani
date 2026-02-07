@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-refactor-the-auth-provider-setup-so-a-real-authprovider-wraps-the-entire-app-router-tree-and-the-authprovider-component-is-above-internetidentityprovider-in-the-rendered-hierarchy-while-still-allowing-authcontext-to-use-internet-identity-state-internally-e-g-by-making-authprovider-an-outer-wrapper-that-renders-internetidentityprovider-and-an-internal-provider-that-uses-useinternetidentity",
-      "featureTitle": "Refactor the auth provider setup so a real `AuthProvider` wraps the entire app/router tree, and the `AuthProvider` component is above `InternetIdentityProvider` in the rendered hierarchy while still allowing AuthContext to use Internet Identity state internally (e.g., by making `AuthProvider` an outer wrapper that renders `InternetIdentityProvider` and an internal provider that uses `useInternetIdentity`).",
+      "featureId": "feature-redeploy-the-existing-vaani-project-do-not-initialize-a-new-project-to-produce-a-publicly-accessible-testing-build-retrying-deployment-if-the-previous-attempt-errored",
+      "featureTitle": "Redeploy the existing VAANI project (do not initialize a new project) to produce a publicly accessible testing build, retrying deployment if the previous attempt errored.",
       "files": [
-        "frontend/src/contexts/AuthContext.tsx"
+        "frontend/DEPLOYMENT_VERIFICATION.md",
+        "frontend/scripts/redeploy-testing-build.sh"
       ],
       "components": [
         "authorization@4.0.0",
@@ -21,27 +22,8 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-preserve-and-validate-existing-auth-behaviors-after-provider-hierarchy-changes-login-logout-admin-redirect-to-studio-query-cache-clearing-on-logout-and-idle-timeout-auto-logout-banner-behavior-in-creator-zone",
-      "featureTitle": "Preserve and validate existing auth behaviors after provider hierarchy changes: login, logout, admin redirect to `/studio`, query-cache clearing on logout, and idle timeout auto-logout banner behavior in Creator Zone.",
-      "files": [
-        "frontend/src/contexts/AuthContext.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-do-not-modify-compiled-built-artifacts-apply-the-fix-only-in-source-typescript-tsx-files-e-g-under-frontend-src",
-      "featureTitle": "Do not modify compiled/built artifacts; apply the fix only in source TypeScript/TSX files (e.g., under `frontend/src/**`).",
+      "featureId": "feature-after-redeploying-verify-the-live-testing-build-against-the-checklist-in-frontend-deployment-verification-md-initial-unauthenticated-load-login-flow-authenticated-navigation-logout-flow-idle-timeout-logo-verification-and-console-verification",
+      "featureTitle": "After redeploying, verify the live testing build against the checklist in `frontend/DEPLOYMENT_VERIFICATION.md` (initial unauthenticated load, login flow, authenticated navigation, logout flow, idle timeout, logo verification, and console verification).",
       "files": [
         "frontend/DEPLOYMENT_VERIFICATION.md"
       ],
@@ -54,26 +36,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-redeploy-after-applying-the-fix-and-verify-using-the-checks-described-in-frontend-deployment-verification-md-initial-load-login-logout-navigation-idle-timeout-and-console-error-free-operation",
-      "featureTitle": "Redeploy after applying the fix and verify using the checks described in `frontend/DEPLOYMENT_VERIFICATION.md` (initial load, login, logout, navigation, idle timeout, and console error-free operation).",
-      "files": [
-        "frontend/DEPLOYMENT_VERIFICATION.md"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
+        "REQ-2"
       ],
       "confidence": "high"
     }
